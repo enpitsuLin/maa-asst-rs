@@ -28,7 +28,7 @@ fn main() {
     }
     let ptr = create();
 
-    let connected = connect(ptr, "adb", "127.0.0.1", "").unwrap();
+    let connected = connect(ptr, "adb", "127.0.0.1", None).unwrap();
 
     if !connected {
         println!("connect failed");
