@@ -26,11 +26,14 @@ pub fn connect<T: Into<Vec<u8>>>(
     handle: AsstHandle,
     adb_path: T,
     address: T,
-    config: T,
+    config: Option<T>,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     let adb_path = CString::new(adb_path)?.into_raw();
     let address = CString::new(address)?.into_raw();
-    let config = CString::new(config)?.into_raw();
+    let config = match config {
+        Some(value) => CString::new(value)?.into_raw(),
+        None => std::ptr::null(),
+    };
     unsafe { Ok(raw::AsstConnect(handle, adb_path, address, config)) }
 }
 
