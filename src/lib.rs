@@ -4,9 +4,8 @@ use libc::{c_int, c_ulonglong, c_void};
 pub use raw::{Assistant, AsstApiCallback, AsstHandle, TaskId};
 use std::ffi::{CStr, CString};
 
-#[allow(temporary_cstring_as_ptr)]
 pub fn load_resource<T: Into<Vec<u8>>>(path: T) -> Result<bool, Box<dyn std::error::Error>> {
-    let path = CString::new(path).unwrap().as_ptr();
+    let path = CString::new(path).unwrap().into_raw();
     unsafe { Ok(raw::AsstLoadResource(path)) }
 }
 
@@ -22,16 +21,15 @@ pub fn destroy(handle: AsstHandle) {
     unsafe { raw::AsstDestroy(handle) }
 }
 
-#[allow(temporary_cstring_as_ptr)]
 pub fn connect<T: Into<Vec<u8>>>(
     handle: AsstHandle,
     adb_path: T,
     address: T,
     config: T,
 ) -> Result<bool, Box<dyn std::error::Error>> {
-    let adb_path = CString::new(adb_path)?.as_ptr();
-    let address = CString::new(address)?.as_ptr();
-    let config = CString::new(config)?.as_ptr();
+    let adb_path = CString::new(adb_path)?.into_raw();
+    let address = CString::new(address)?.into_raw();
+    let config = CString::new(config)?.into_raw();
     unsafe { Ok(raw::AsstConnect(handle, adb_path, address, config)) }
 }
 
@@ -40,8 +38,8 @@ pub fn append_task<T: Into<Vec<u8>>>(
     type_: T,
     params: T,
 ) -> Result<TaskId, Box<dyn std::error::Error>> {
-    let type_ = CString::new(type_)?.as_ptr();
-    let params = CString::new(params)?.as_ptr();
+    let type_ = CString::new(type_)?.into_raw();
+    let params = CString::new(params)?.into_raw();
     unsafe { Ok(raw::AsstAppendTask(handle, type_, params)) }
 }
 
@@ -50,7 +48,7 @@ pub fn set_task_params<T: Into<Vec<u8>>>(
     id: TaskId,
     params: T,
 ) -> Result<bool, Box<dyn std::error::Error>> {
-    let params = CString::new(params)?.as_ptr();
+    let params = CString::new(params)?.into_raw();
     unsafe { Ok(raw::AsstSetTaskParams(handle, id, params)) }
 }
 
@@ -78,8 +76,8 @@ pub fn get_version() -> Result<String, Box<dyn std::error::Error>> {
 }
 
 pub fn log<T: Into<Vec<u8>>>(level: T, message: T) -> Result<(), Box<dyn std::error::Error>> {
-    let level = CString::new(level)?.as_ptr();
-    let message = CString::new(message)?.as_ptr();
+    let level = CString::new(level)?.into_raw();
+    let message = CString::new(message)?.into_raw();
     unsafe {
         raw::AsstLog(level, message);
         Ok(())
