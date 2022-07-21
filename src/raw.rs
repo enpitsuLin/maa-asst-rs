@@ -1,9 +1,14 @@
+//! # raw.rs
+//! 定义参阅[AsstCaller.h](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/master/include/AsstCaller.h)
+
 #![allow(dead_code)]
 #![allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
 
 extern crate libc;
 use libc::{c_char, c_int, c_ulonglong, c_void};
 
+/// Assistant 类
+/// 仅引入供类型系统使用 不负责其内部实现
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct Assistant {
@@ -11,7 +16,9 @@ pub struct Assistant {
 }
 
 pub type AsstHandle = Assistant;
+/// 任务id
 pub type TaskId = c_int;
+/// Api回调函数
 pub type AsstApiCallback =
     Option<unsafe extern "C" fn(msg: c_int, detail_json: *const c_char, custom_arg: *mut c_void)>;
 
