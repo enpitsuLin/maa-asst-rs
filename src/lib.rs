@@ -1,3 +1,4 @@
+extern crate libc;
 mod raw;
 
 use libc::{c_int, c_ulonglong, c_void};
