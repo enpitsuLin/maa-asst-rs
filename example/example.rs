@@ -16,13 +16,9 @@ fn pause() {
 }
 
 fn main() {
-    let mut arguments: Vec<String> = Vec::new();
-    for argument in env::args() {
-        arguments.push(argument);
-    }
     // 默认读取构建的可执行文件同目录中的resource文件夹
-    let exec_dir = Path::new(arguments.get(0).unwrap()).parent();
-    let resource_path = exec_dir.unwrap().as_os_str().to_str().unwrap();
+    let cur_dir = env::current_dir().unwrap();
+    let resource_path = cur_dir.to_str().unwrap();
 
     let loaded = load_resource(resource_path).unwrap();
     if !loaded {
