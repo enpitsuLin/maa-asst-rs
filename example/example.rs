@@ -1,6 +1,7 @@
 use maa::*;
-use std::io;
 use std::io::prelude::*;
+use std::path::Path;
+use std::{env, io};
 
 fn pause() {
     let mut stdin = io::stdin();
@@ -15,9 +16,18 @@ fn pause() {
 }
 
 fn main() {
-    let loaded = load_resource("path").unwrap();
+    let mut arguments: Vec<String> = Vec::new();
+    for argument in env::args() {
+        arguments.push(argument);
+    }
+    // 默认读取构建的可执行文件同目录中的resource文件夹
+    let exec_dir = Path::new(arguments.get(0).unwrap()).parent();
+    let resource_path = exec_dir.unwrap().as_os_str().to_str().unwrap();
+
+    let loaded = load_resource(resource_path).unwrap();
     if !loaded {
         println!("load resource failed");
+        pause();
         return;
     }
     let ptr = create();
@@ -27,6 +37,7 @@ fn main() {
     if !connected {
         println!("connect failed");
         destroy(ptr);
+        pause();
         return;
     }
 
