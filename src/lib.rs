@@ -5,7 +5,7 @@ pub use raw::{Assistant, AsstApiCallback, AsstHandle, TaskId};
 use std::ffi::{CStr, CString};
 
 pub fn load_resource<T: Into<Vec<u8>>>(path: T) -> Result<bool, Box<dyn std::error::Error>> {
-    let path = CString::new(path).unwrap().into_raw();
+    let path = CString::new(path)?.into_raw();
     unsafe { Ok(raw::AsstLoadResource(path)) }
 }
 
