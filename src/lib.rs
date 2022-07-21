@@ -2,7 +2,7 @@ extern crate libc;
 mod raw;
 
 use libc::{c_int, c_ulonglong, c_void};
-pub use raw::{Assistant, AsstApiCallback, AsstHandle, TaskId};
+pub use raw::{AsstApiCallback, AsstHandle, TaskId};
 use std::ffi::{CStr, CString};
 
 pub fn load_resource<T: Into<Vec<u8>>>(path: T) -> Result<bool, Box<dyn std::error::Error>> {

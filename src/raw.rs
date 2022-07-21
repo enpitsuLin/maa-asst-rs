@@ -7,15 +7,7 @@
 extern crate libc;
 use libc::{c_char, c_int, c_ulonglong, c_void};
 
-/// Assistant 类
-/// 仅引入供类型系统使用 不负责其内部实现
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct Assistant {
-    _unused: [u8; 0],
-}
-
-pub type AsstHandle = Assistant;
+pub type AsstHandle = *const c_void;
 /// 任务id
 pub type TaskId = c_int;
 /// Api回调函数
