@@ -1,5 +1,6 @@
 extern crate libc;
 mod raw;
+mod message;
 
 use libc::{c_int, c_ulonglong, c_void};
 pub use raw::{AsstApiCallback, AsstHandle, TaskId};
