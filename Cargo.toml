@@ -18,3 +18,7 @@ name = "maa"
 [[example]]
 name = "example"
 path = "example/example.rs"
+
+[[example]]
+name = "create_ex"
+path = "example/create_ex.rs"
