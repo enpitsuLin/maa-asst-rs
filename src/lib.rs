@@ -3,6 +3,7 @@ mod message;
 mod raw;
 
 use libc::{c_int, c_ulonglong, c_void};
+pub use message::AsstMsg;
 pub use raw::{AsstApiCallback, AsstHandle, TaskId};
 use std::ffi::{CStr, CString};
 
