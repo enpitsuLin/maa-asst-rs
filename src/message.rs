@@ -1,5 +1,6 @@
 /// 回调消息类型枚举
 #[derive(PartialEq)]
+#[allow(dead_code)]
 pub enum AsstMsg {
     /* Global Info */
     /// 内部错误

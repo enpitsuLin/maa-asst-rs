@@ -1,6 +1,5 @@
 use maa::*;
 use std::io::prelude::*;
-use std::path::Path;
 use std::{env, io};
 
 /// 参考 https://users.rust-lang.org/t/rusts-equivalent-of-cs-system-pause/4494/4
