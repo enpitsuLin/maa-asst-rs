@@ -12,8 +12,14 @@ version = "0.1.0"
 [dependencies]
 libc = "0.2"
 
+[build-dependencies]
+glob = "0.3"
+
 [lib]
 name = "maa"
+
+[features]
+pack = []
 
 [[example]]
 name = "example"
