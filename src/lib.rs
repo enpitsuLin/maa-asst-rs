@@ -1,28 +1,33 @@
 extern crate libc;
-mod raw;
 mod message;
+mod raw;
 
 use libc::{c_int, c_ulonglong, c_void};
 pub use raw::{AsstApiCallback, AsstHandle, TaskId};
 use std::ffi::{CStr, CString};
 
+/// 加载助手系统资源
 pub fn load_resource<T: Into<Vec<u8>>>(path: T) -> Result<bool, Box<dyn std::error::Error>> {
     let path = CString::new(path)?.into_raw();
     unsafe { Ok(raw::AsstLoadResource(path)) }
 }
 
+/// 创建实例
 pub fn create() -> AsstHandle {
     unsafe { raw::AsstCreate() }
 }
 
+/// 创建带回调的实例
 pub fn create_ex(callback: AsstApiCallback, custom_arg: *mut libc::c_void) -> AsstHandle {
     unsafe { raw::AsstCreateEx(callback, custom_arg) }
 }
 
+/// 摧毁实例
 pub fn destroy(handle: AsstHandle) {
     unsafe { raw::AsstDestroy(handle) }
 }
 
+/// 连接设备
 pub fn connect<T: Into<Vec<u8>>>(
     handle: AsstHandle,
     adb_path: T,
@@ -38,6 +43,7 @@ pub fn connect<T: Into<Vec<u8>>>(
     unsafe { Ok(raw::AsstConnect(handle, adb_path, address, config)) }
 }
 
+/// 新增任务
 pub fn append_task<T: Into<Vec<u8>>>(
     handle: AsstHandle,
     type_: T,
@@ -48,6 +54,7 @@ pub fn append_task<T: Into<Vec<u8>>>(
     unsafe { Ok(raw::AsstAppendTask(handle, type_, params)) }
 }
 
+/// 设置任务参数
 pub fn set_task_params<T: Into<Vec<u8>>>(
     handle: AsstHandle,
     id: TaskId,
@@ -57,22 +64,27 @@ pub fn set_task_params<T: Into<Vec<u8>>>(
     unsafe { Ok(raw::AsstSetTaskParams(handle, id, params)) }
 }
 
+/// 开始任务
 pub fn start(handle: AsstHandle) -> bool {
     unsafe { raw::AsstStart(handle) }
 }
 
+/// 停止任务
 pub fn stop(handle: AsstHandle) -> bool {
     unsafe { raw::AsstStop(handle) }
 }
 
+/// 获取截图(?)
 pub fn get_image(handle: AsstHandle, buff: *mut c_void, buff_size: c_ulonglong) -> c_ulonglong {
     unsafe { raw::AsstGetImage(handle, buff, buff_size) }
 }
 
+/// 使用controller模拟点击
 pub fn controller_click(handle: AsstHandle, x: c_int, y: c_int, block: bool) -> bool {
     unsafe { raw::AsstCtrlerClick(handle, x, y, block) }
 }
 
+/// 获取版本
 pub fn get_version() -> Result<String, Box<dyn std::error::Error>> {
     unsafe {
         let version = CStr::from_ptr(raw::AsstGetVersion()).to_str()?;
@@ -80,6 +92,7 @@ pub fn get_version() -> Result<String, Box<dyn std::error::Error>> {
     }
 }
 
+/// 日志
 pub fn log<T: Into<Vec<u8>>>(level: T, message: T) -> Result<(), Box<dyn std::error::Error>> {
     let level = CString::new(level)?.into_raw();
     let message = CString::new(message)?.into_raw();
