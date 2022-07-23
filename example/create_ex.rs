@@ -19,11 +19,9 @@ fn pause() {
 
 /// 消息回调函数 简单输出下
 unsafe extern "C" fn callback(msg: c_int, detail_json: *const c_char, custom_arg: *mut c_void) {
-    println!(
-        "rust callback: {:?} {:?}",
-        CStr::from_ptr(detail_json).to_str(),
-        detail_json,
-    );
+    let msg = AsstMsg::try_from(msg).unwrap();
+    let detail_json = CStr::from_ptr(detail_json).to_str().unwrap();
+    println!("回调消息: {:?} {:?} {:?}", msg, detail_json, custom_arg);
 }
 
 fn main() {
