@@ -39,32 +39,18 @@ fn main() {
     let custom_arg: *mut c_void = &mut String::from("") as *mut _ as *mut c_void;
     let ptr = create_ex(Some(callback), custom_arg);
 
-    // let connected = connect(ptr, "adb", "127.0.0.1:59216", None).unwrap();
+    let connected = connect(ptr, "adb", "127.0.0.1:59216", None).unwrap();
 
-    // if !connected {
-    //     println!("connect failed");
-    //     destroy(ptr);
-    //     pause();
-    //     return;
-    // }
+    if !connected {
+        println!("connect failed");
+        destroy(ptr);
+        pause();
+        return;
+    }
 
     append_task(ptr, "StartUp", "").unwrap();
     append_task(ptr, "Fight", r#"{"stage": "1-7","times":1}"#).unwrap();
     append_task(ptr, "Visit", "").unwrap();
-    append_task(ptr, "Visit", "").unwrap();
-    append_task(ptr, "Visit", "").unwrap();
-    append_task(ptr, "Visit", "").unwrap();
-    append_task(ptr, "Visit", "").unwrap();
-    append_task(ptr, "Visit", "").unwrap();
-    append_task(ptr, "Visit", "").unwrap();
-    append_task(ptr, "Visit", "").unwrap();
-    append_task(ptr, "Visit", "").unwrap();
-    append_task(ptr, "Visit", "").unwrap();
-
-    let list = get_tasks_list(ptr).unwrap();
-    println!("{:?}", list);
-    let uuid = get_uuid(ptr).unwrap();
-    println!("{:?}", uuid);
 
     pause();
     start(ptr);
