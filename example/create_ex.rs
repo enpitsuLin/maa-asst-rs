@@ -25,10 +25,10 @@ unsafe extern "C" fn callback(msg: c_int, detail_json: *const c_char, custom_arg
 }
 
 fn main() {
-    // 默认读取构建的可执行文件同目录中的resource文件夹
-    let cur_dir = env::current_dir().unwrap();
-    let resource_path = cur_dir.to_str().unwrap();
+    // 读取构建用的环境变量
+    let resource_path = env!("MAA_LIB_PATH");
 
+    print!("{}", resource_path);
     let loaded = load_resource(resource_path).unwrap();
     if !loaded {
         println!("load resource failed");
