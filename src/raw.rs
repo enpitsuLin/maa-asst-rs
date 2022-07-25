@@ -39,6 +39,16 @@ extern "C" {
         buff: *mut c_void,
         buff_size: c_ulonglong,
     ) -> c_ulonglong;
+    pub fn AsstGetUUID(
+        handle: AsstHandle,
+        buff: *const c_char,
+        buff_size: c_ulonglong,
+    ) -> c_ulonglong;
+    pub fn AsstGetTasksList(
+        handle: AsstHandle,
+        buff: *const TaskId,
+        buff_size: c_ulonglong,
+    ) -> c_ulonglong;
     pub fn AsstCtrlerClick(handle: AsstHandle, x: c_int, y: c_int, block: bool) -> bool;
     pub fn AsstGetVersion() -> *const c_char;
     pub fn AsstLog(level: *const c_char, message: *const c_char);
