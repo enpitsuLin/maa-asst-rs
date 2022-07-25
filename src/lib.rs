@@ -80,6 +80,29 @@ pub fn get_image(handle: AsstHandle, buff: *mut c_void, buff_size: c_ulonglong) 
     unsafe { raw::AsstGetImage(handle, buff, buff_size) }
 }
 
+/// 获取uuid
+pub fn get_uuid(handle: AsstHandle) -> Result<String, Box<dyn std::error::Error>> {
+    let buff = CString::new("")?.as_ptr();
+    unsafe {
+        raw::AsstGetUUID(handle, buff, u64::max_value());
+        let uuid = CStr::from_ptr(buff).to_str()?;
+        Ok(uuid.to_owned())
+    }
+}
+
+/// 获取当前任务列表
+pub fn get_tasks_list(handle: AsstHandle) -> Result<Vec<TaskId>, Box<dyn std::error::Error>> {
+    let mut list: Vec<TaskId> = Vec::with_capacity(1000);
+    unsafe {
+        let buff = list.as_ptr();
+        println!("{:?} {:?}", buff, *buff);
+        let data_size = raw::AsstGetTasksList(handle, buff, list.capacity().try_into()?);
+        list.set_len(data_size.try_into()?);
+        list.shrink_to_fit();
+        Ok(list)
+    }
+}
+
 /// 使用controller模拟点击
 pub fn controller_click(handle: AsstHandle, x: c_int, y: c_int, block: bool) -> bool {
     unsafe { raw::AsstCtrlerClick(handle, x, y, block) }
