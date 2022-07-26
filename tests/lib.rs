@@ -12,12 +12,13 @@ fn test_load_resource() {
 }
 
 #[test]
-fn test_instance() {
+fn test_instance_normal() {
     let loaded = load_resource(env!("MAA_LIB_PATH")).unwrap();
     if loaded {
         let ptr = create();
+        assert!(!ptr.is_null(), "instance created");
         destroy(&ptr);
-        assert!(ptr.is_null());
+        assert!(ptr.is_null(), "instance destroyed");
     } else {
         unreachable!()
     }
