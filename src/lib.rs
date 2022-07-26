@@ -24,8 +24,12 @@ pub fn create_ex(callback: AsstApiCallback, custom_arg: *mut libc::c_void) -> As
 }
 
 /// 摧毁实例
-pub fn destroy(ptr: AsstHandle) {
-    unsafe { raw::AsstDestroy(ptr) }
+#[allow(unused_assignments)]
+pub fn destroy(mut ptr: AsstHandle) {
+    unsafe {
+        raw::AsstDestroy(ptr);
+        ptr = 0 as *mut libc::c_void;
+    }
 }
 
 /// 连接设备
