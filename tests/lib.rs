@@ -17,7 +17,7 @@ fn test_instance_normal() {
     if loaded {
         let ptr = create();
         assert!(!ptr.is_null(), "instance created");
-        destroy(&ptr);
+        destroy(ptr);
         assert!(ptr.is_null(), "instance destroyed");
     } else {
         unreachable!()
