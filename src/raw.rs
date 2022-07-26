@@ -19,7 +19,7 @@ extern "C" {
     pub fn AsstLoadResource(path: *const c_char) -> bool;
     pub fn AsstCreate() -> AsstHandle;
     pub fn AsstCreateEx(callback: AsstApiCallback, custom_arg: *mut c_void) -> AsstHandle;
-    pub fn AsstDestroy(handle: AsstHandle);
+    pub fn AsstDestroy(handle: &AsstHandle);
     pub fn AsstConnect(
         handle: AsstHandle,
         adb_path: *const c_char,
