@@ -7,7 +7,7 @@
 extern crate libc;
 use libc::{c_char, c_int, c_ulonglong, c_void};
 
-pub type AsstHandle = *const c_void;
+pub type AsstHandle = *mut c_void;
 /// 任务id
 pub type TaskId = c_int;
 /// Api回调函数
