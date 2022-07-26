@@ -43,7 +43,7 @@ fn main() {
 
     if !connected {
         println!("connect failed");
-        destroy(ptr);
+        destroy(&ptr);
         pause();
         return;
     }
@@ -55,5 +55,5 @@ fn main() {
     pause();
     start(ptr);
     stop(ptr);
-    destroy(ptr);
+    destroy(&ptr);
 }
