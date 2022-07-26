@@ -1,5 +1,9 @@
 # mma-asst-rs
 
+[![Latest Version](https://img.shields.io/crates/v/maa.svg)](https://crates.io/crates/maa)
+
+[![dependency status](https://deps.rs/repo/github/enpitsuLin/maa-asst-rs/status.svg)](https://deps.rs/repo/github/enpitsuLin/maa-asst-rs)
+
 [MMA 助手](https://github.com/MaaAssistantArknights/MaaAssistantArknights)的 rust 绑定
 
 ## 安装
