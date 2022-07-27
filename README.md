@@ -5,20 +5,18 @@
 
 [MMA 助手](https://github.com/MaaAssistantArknights/MaaAssistantArknights)的 rust 绑定，提供一系列 rust 语法友好的封装。
 
-## 安装
+## 用法
 
-本库未发布到`crates.io`,请在 `Cargo.toml` 中添加
+本库已发布到[`crates.io`](https://crates.io/crates/maa),请在 `Cargo.toml` 中添加
 
 ```toml
 [dependencies]
-maa = { git = "https://github.com/enpitsuLin/maa-asst-rs" }
+maa = "*"
 ```
 
-## 用法
+详细用法见`example/*`下的文件
 
-见`example/*`下的文件
-
-## 注意事项
+## 构建
 
 此库以及引用此库构建需要自行编译 MeoAssistant 的链接库文件(\*.lib,\*.dll),并设置环境变量`MAA_LIB_PATH`为其路径。
 
