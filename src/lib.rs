@@ -79,6 +79,11 @@ pub fn stop(handle: AsstHandle) -> bool {
     unsafe { raw::AsstStop(handle) }
 }
 
+/// 使用controller模拟点击
+pub fn controller_click(handle: AsstHandle, x: c_int, y: c_int, block: bool) -> bool {
+    unsafe { raw::AsstCtrlerClick(handle, x, y, block) }
+}
+
 /// 获取截图(?)
 pub fn get_image(handle: AsstHandle, buff: *mut c_void, buff_size: c_ulonglong) -> c_ulonglong {
     unsafe { raw::AsstGetImage(handle, buff, buff_size) }
@@ -107,9 +112,8 @@ pub fn get_tasks_list(handle: AsstHandle) -> Result<Vec<TaskId>, Box<dyn std::er
     }
 }
 
-/// 使用controller模拟点击
-pub fn controller_click(handle: AsstHandle, x: c_int, y: c_int, block: bool) -> bool {
-    unsafe { raw::AsstCtrlerClick(handle, x, y, block) }
+pub fn get_null_size() -> c_ulonglong {
+    unsafe { raw::AsstGetNullSize() }
 }
 
 /// 获取版本

@@ -34,6 +34,7 @@ extern "C" {
     pub fn AsstSetTaskParams(handle: AsstHandle, id: TaskId, params: *const c_char) -> bool;
     pub fn AsstStart(handle: AsstHandle) -> bool;
     pub fn AsstStop(handle: AsstHandle) -> bool;
+    pub fn AsstCtrlerClick(handle: AsstHandle, x: c_int, y: c_int, block: bool) -> bool;
     pub fn AsstGetImage(
         handle: AsstHandle,
         buff: *mut c_void,
@@ -49,8 +50,8 @@ extern "C" {
         buff: *const TaskId,
         buff_size: c_ulonglong,
     ) -> c_ulonglong;
-    pub fn AsstCtrlerClick(handle: AsstHandle, x: c_int, y: c_int, block: bool) -> bool;
     pub fn AsstGetVersion() -> *const c_char;
+    pub fn AsstGetNullSize() -> c_ulonglong;
     pub fn AsstLog(level: *const c_char, message: *const c_char);
 
 }
