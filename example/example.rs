@@ -25,13 +25,13 @@ fn main() {
         pause();
         return;
     }
-    let ptr = create();
+    let mut ptr = create();
 
     let connected = connect(ptr, "adb", "127.0.0.1", None).unwrap();
 
     if !connected {
         println!("connect failed");
-        destroy(ptr);
+        destroy(&mut ptr);
         pause();
         return;
     }
@@ -41,5 +41,5 @@ fn main() {
     start(ptr);
     pause();
     stop(ptr);
-    destroy(ptr);
+    destroy(&mut ptr);
 }

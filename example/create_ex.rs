@@ -37,13 +37,13 @@ fn main() {
     }
 
     let custom_arg: *mut c_void = &mut String::from("") as *mut _ as *mut c_void;
-    let ptr = create_ex(Some(callback), custom_arg);
+    let mut ptr = create_ex(Some(callback), custom_arg);
 
     let connected = connect(ptr, "adb", "127.0.0.1:59216", None).unwrap();
 
     if !connected {
         println!("connect failed");
-        destroy(ptr);
+        destroy(&mut ptr);
         pause();
         return;
     }
@@ -55,5 +55,5 @@ fn main() {
     pause();
     start(ptr);
     stop(ptr);
-    destroy(ptr);
+    destroy(&mut ptr);
 }
