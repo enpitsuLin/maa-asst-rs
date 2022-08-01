@@ -15,9 +15,9 @@ fn test_load_resource() {
 fn test_instance_normal() {
     let loaded = load_resource(env!("MAA_LIB_PATH")).unwrap();
     if loaded {
-        let ptr = create();
+        let mut ptr = create();
         assert!(!ptr.is_null(), "instance created");
-        destroy(ptr);
+        destroy(&mut ptr);
         assert!(ptr.is_null(), "instance destroyed");
     } else {
         unreachable!()
