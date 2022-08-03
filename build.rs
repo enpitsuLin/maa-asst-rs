@@ -20,19 +20,13 @@ fn main() {
 
     work_dir.iter().for_each(|dir_path| {
         let asset_path = Path::new(&lib_dir).join("*.dll");
-        let exe_dir = &Path::new(&out_dir[..])
-            .join(dir_path)
-            .canonicalize()
-            .unwrap();
+        let exe_dir = &Path::new(&out_dir[..]).join(dir_path).canonicalize().unwrap();
         symbolic_link_assets(asset_path.to_str().unwrap(), exe_dir).unwrap();
     });
 }
 
 #[cfg(windows)]
-fn symbolic_link_assets(
-    asset_dir: &str,
-    exe_dir: &PathBuf,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn symbolic_link_assets(asset_dir: &str, exe_dir: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     for asset in glob::glob(asset_dir).unwrap() {
         match asset {
             Ok(dll_origin) => {
@@ -46,7 +40,7 @@ fn symbolic_link_assets(
                     }
                     os::windows::fs::symlink_file(dll_origin, dll_symbol)?;
                 };
-            }
+            },
             Err(_) => unreachable!(),
         }
     }
@@ -54,9 +48,6 @@ fn symbolic_link_assets(
 }
 
 #[cfg(not(windows))]
-fn symbolic_link_assets(
-    asset_dir: &str,
-    exe_dir: &PathBuf,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn symbolic_link_assets(asset_dir: &str, exe_dir: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     unimplemented!()
 }

@@ -35,7 +35,7 @@ pub enum AsstMsg {
 
 impl TryFrom<i32> for AsstMsg {
     type Error = ();
-    
+
     fn try_from(input: i32) -> Result<Self, Self::Error> {
         let input = input.to_owned();
         match input {
