@@ -1,25 +1,10 @@
-[package]
+[workspace.package]
 authors = ['enpitsulin <enpitsulin@gmail.com>']
-description = "明日方舟MMA助手的rust绑定"
+description = "N/a"
 edition = "2021"
 license = "MIT"
-name = "maa"
-repository = "https://github.com/enpitsuLin/maa-asst-rs"
-version = "0.3.0"
+repository = "https://github.com/enpitsuLin/maa-asst-rs" 
 
-[dependencies]
-libc = "0.2"
-
-[build-dependencies]
-glob = "0.3"
-
-[lib]
-name = "maa"
-
-[[example]]
-name = "example"
-path = "example/example.rs"
-
-[[example]]
-name = "create_ex"
-path = "example/create_ex.rs"
+[workspace]
+resolver = "2"
+members = ["maa-sys", "maa-gpui"]

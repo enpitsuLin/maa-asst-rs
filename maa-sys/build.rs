@@ -1,19 +1,40 @@
-#![allow(unused_variables)]
+//! # Build script
+//!
+
 use std::{
-    env, fs, os,
+    env,
     path::{Path, PathBuf},
 };
+extern crate bindgen;
+extern crate glob;
 
 fn main() {
+    println!("cargo:rerun-if-env-changed=MAA_LIB_PATH");
+    println!("cargo:rerun-if-env-changed=MAA_HEADER_PATH");
+
     let lib_dir = env::var("MAA_LIB_PATH").unwrap_or_else(|err| {
         println!("cargo:warning=环境变量 MAA_LIB_PATH 未设置");
         panic!("{:?}", err);
     });
-
+    
     let out_dir = env::var("OUT_DIR").unwrap();
 
-    println!("cargo:rustc-flags=-L {}", lib_dir);
     println!("cargo:rustc-link-search=native={}", lib_dir);
+
+    println!("cargo:rustc-link-lib=static=MaaCore");
+
+    let maa_header_path = env::var("MAA_HEADER_PATH").unwrap();
+
+    let bindings = bindgen::Builder::default()
+        .header(maa_header_path)
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+        .generate()
+        .expect("Unable to generate bindings");
+
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    bindings
+        .write_to_file(out_path.join("bindings.rs"))
+        .expect("Couldn't write bindings!");
 
     println!("cargo:warning=移动依赖");
     let work_dir = vec!["../../..", "../../../deps"];
@@ -27,6 +48,8 @@ fn main() {
 
 #[cfg(windows)]
 fn symbolic_link_assets(asset_dir: &str, exe_dir: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    use std::{fs, os};
+
     for asset in glob::glob(asset_dir).unwrap() {
         match asset {
             Ok(dll_origin) => {
