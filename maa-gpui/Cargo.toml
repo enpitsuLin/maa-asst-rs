@@ -1,0 +1,15 @@
+[package]
+name = "maa-gpui"
+version = "0.0.1"
+license = "MIT"
+authors = ['enpitsulin <enpitsulin@gmail.com>']
+description = "基于 GPUI 的明日方舟 MMA 助手的 GUI"
+readme = "README.md"
+edition = "2021"
+rust-version = "1.87.0"
+
+[dependencies]
+gpui = { git = "https://github.com/huacnlee/zed.git", branch = "webview" }
+gpui-component = { git = "https://github.com/longbridge/gpui-component.git" }
+
+ffi = { package = "maa-sys", version = "0.1.0", path = "../maa-sys" }

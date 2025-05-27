@@ -1,0 +1,28 @@
+[package]
+name = "maa-sys"
+version = "0.1.0"
+license = "MIT"
+authors = ['enpitsulin <enpitsulin@gmail.com>']
+description = "明日方舟 MMA 助手的 rust 绑定"
+readme = "README.md"
+build = "build.rs"
+edition = "2021"
+rust-version = "1.87.0"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+maa-sys-derive = { path = "../maa-sys-derive" }
+
+[dev-dependencies]
+libc = "0.2"
+
+[build-dependencies]
+bindgen = "0.71.1"
+glob = "0.3.2"
+cc = "1.0"
+
+
+[[example]]
+name = "demo"
+path = "example/demo.rs"
