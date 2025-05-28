@@ -18,12 +18,18 @@ pub fn derive_maa_task(input: TokenStream) -> TokenStream {
         _ => panic!("MAATask 只支持结构体"),
     };
 
-    // 生成 builder 字段（与结构体字段相同）
+    // 生成 builder 字段（与结构体字段相同，但必选字段使用 Option 包装）
     let builder_fields = fields.iter().map(|f| {
         let name = &f.ident;
         let ty = &f.ty;
-        quote! {
-            #name: #ty
+        if is_option_type(ty) {
+            quote! {
+                #name: #ty
+            }
+        } else {
+            quote! {
+                #name: Option<#ty>
+            }
         }
     });
 
@@ -50,10 +56,19 @@ pub fn derive_maa_task(input: TokenStream) -> TokenStream {
                 }
             }
         } else {
-            quote! {
-                pub fn #name(mut self, #name: #ty) -> Self {
-                    self.#name = #name;
-                    self
+            if is_string_type(ty) {
+                quote! {
+                    pub fn #name(mut self, #name: impl Into<String>) -> Self {
+                        self.#name = Some(#name.into());
+                        self
+                    }
+                }
+            } else {
+                quote! {
+                    pub fn #name(mut self, #name: #ty) -> Self {
+                        self.#name = Some(#name);
+                        self
+                    }
                 }
             }
         }
@@ -62,9 +77,16 @@ pub fn derive_maa_task(input: TokenStream) -> TokenStream {
     // 生成 build 方法中的字段初始化
     let build_fields = fields.iter().map(|f| {
         let name = &f.ident;
+        let ty = &f.ty;
 
-        quote! {
-            #name: self.#name.or_else(Default::default)
+        if is_option_type(ty) {
+            quote! {
+                #name: self.#name.or_else(Default::default)
+            }
+        } else {
+            quote! {
+                #name: self.#name.expect(concat!("必选字段 ", stringify!(#name), " 未设置"))
+            }
         }
     });
 
