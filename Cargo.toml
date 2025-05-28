@@ -7,4 +7,4 @@ repository = "https://github.com/enpitsuLin/maa-asst-rs"
 
 [workspace]
 resolver = "2"
-members = ["maa-sys", "maa-gpui"]
+members = ["crates/*"]
