@@ -1,22 +1,53 @@
 mod raw;
 pub mod task;
- 
+
 use std::ffi::{CStr, CString};
 use std::ptr::NonNull;
 use std::sync::Once;
 
 static INIT: Once = Once::new();
 
-
 #[derive(Debug)]
 pub enum Error {
     ResourceLoadFailed,
     CreateFailed,
+    Unknown,
+}
+
+pub enum StaticOptionKey {
+    /// 无效
+    Invalid,
+
+    /// 用CPU进行OCR
+    CpuOCR,
+
+    /// 用GPU进行OCR
+    GpuOCR,
+}
+
+pub enum InstanceOptionKey {
+    /// 已弃用
+    Invalid = 0,
+    /// 是否启用 minitouch
+    /// 开了也不代表就一定能用，有可能设备不支持等
+    /// "1" 开，"0" 关
+    MinitouchEnabled = 1,
+    /// 触控模式设置，默认 minitouch
+    /// minitouch | maatouch | adb
+    TouchMode = 2,
+    /// 是否暂停下干员，同时影响抄作业、肉鸽、保全
+    /// "1" | "0"
+    DeploymentWithPause = 3,
+    /// 是否使用 AdbLite， "0" | "1"
+    AdbLiteEnabled = 4,
+    /// 退出时是否杀掉 Adb 进程， "0" | "1"
+    KillAdbOnExit = 5,
 }
 
 /// MAA助手的主要结构体
 pub struct Assistant {
     handle: NonNull<raw::AsstExtAPI>,
+    target: Option<String>,
 }
 
 impl Assistant {
@@ -24,6 +55,16 @@ impl Assistant {
     fn init_resources(resource_dir: &str) -> bool {
         let resource_path = CString::new(resource_dir).unwrap();
         unsafe { raw::AsstLoadResource(resource_path.as_ptr()) != 0 }
+    }
+
+    pub fn set_instance_option(&mut self, key: InstanceOptionKey, value: impl Into<String>) -> bool {
+        let value_str = CString::new(value.into()).unwrap();
+        unsafe { raw::AsstSetInstanceOption(self.handle.as_ptr(), key as i32, value_str.as_ptr()) != 0 }
+    }
+
+    pub fn set_static_option(key: StaticOptionKey, value: impl Into<String>) -> bool {
+        let value_str = CString::new(value.into()).unwrap();
+        unsafe { raw::AsstSetStaticOption(key as i32, value_str.as_ptr()) != 0 }
     }
 
     /// 创建一个新的Assistant实例
@@ -46,7 +87,7 @@ impl Assistant {
 
         let handle = unsafe { raw::AsstCreate() };
         NonNull::new(handle)
-            .map(|handle| Self { handle })
+            .map(|handle| Self { handle, target: None })
             .ok_or(Error::CreateFailed)
     }
 
@@ -72,24 +113,30 @@ impl Assistant {
 
         let handle = unsafe { raw::AsstCreateEx(callback, custom_arg) };
         NonNull::new(handle)
-            .map(|handle| Self { handle })
+            .map(|handle| Self { handle, target: None })
             .ok_or(Error::CreateFailed)
     }
 
     /// 连接到设备
-    pub fn connect(&mut self, adb_path: &str, address: &str, config: Option<&str>) -> bool {
+    pub fn connect(&mut self, adb_path: &str, address: &str, config: Option<&str>) -> Result<(), Error> {
         let adb_path = CString::new(adb_path).unwrap();
-        let address = CString::new(address).unwrap();
+        let address_cstr = CString::new(address).unwrap();
         let config_str = config.map(|c| CString::new(c).unwrap());
 
         unsafe {
-            raw::AsstAsyncConnect(
+            let ret = raw::AsstAsyncConnect(
                 self.handle.as_ptr(),
                 adb_path.as_ptr(),
-                address.as_ptr(),
+                address_cstr.as_ptr(),
                 config_str.as_ref().map_or(std::ptr::null(), |cs| cs.as_ptr()),
-                0,
-            ) != 0
+                1,
+            );
+            if ret != 0 {
+                self.target = Some(address.to_string());
+                Ok(())
+            } else {
+                Err(Error::Unknown)
+            }
         }
     }
 
@@ -104,13 +151,7 @@ impl Assistant {
         let type_str = CString::new(task.task_type()).unwrap();
         let params_str = CString::new(task.to_json()).unwrap();
 
-        unsafe {
-            raw::AsstAppendTask(
-                self.handle.as_ptr(),
-                type_str.as_ptr(),
-                params_str.as_ptr(),
-            )
-        }
+        unsafe { raw::AsstAppendTask(self.handle.as_ptr(), type_str.as_ptr(), params_str.as_ptr()) }
     }
 
     pub fn set_task_params(&mut self, task_id: i32, params: Option<&str>) -> bool {

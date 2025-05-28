@@ -13,13 +13,18 @@ mod tests {
     use std::ffi::CStr;
 
     #[test]
-    fn test_binding_version() {
+    fn test_asst_get_null_size() {
         unsafe {
             let ret = raw::AsstGetNullSize();
             // -1 in cpp, which becomes u64::MAX when cast to unsigned
             let expected = u64::MAX;
             assert_eq!(ret, expected);
+        }
+    }
 
+    #[test]
+    fn test_asst_get_version() {
+        unsafe {
             let version_ptr = raw::AsstGetVersion();
             let version = CStr::from_ptr(version_ptr)
                 .to_str()
