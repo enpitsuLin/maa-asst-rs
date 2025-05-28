@@ -21,7 +21,7 @@ fn main() {
 
     println!("cargo:rustc-link-search=native={}", lib_dir);
 
-    println!("cargo:rustc-link-lib=static=MaaCore");
+    println!("cargo:rustc-link-lib=dylib=MaaCore");
 
     let maa_header_path = env::var("MAA_HEADER_PATH").unwrap();
 
