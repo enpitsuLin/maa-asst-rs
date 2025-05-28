@@ -4,11 +4,13 @@
 #![allow(dead_code)]
 #![warn(unused_attributes)]
 
+
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 #[cfg(test)]
 mod tests {
-    use crate::raw;
+    use crate::raw; 
+    use std::ffi::CStr;
 
     #[test]
     fn test_binding_version() {
@@ -17,6 +19,12 @@ mod tests {
             // -1 in cpp, which becomes u64::MAX when cast to unsigned
             let expected = u64::MAX;
             assert_eq!(ret, expected);
+
+            let version_ptr = raw::AsstGetVersion();
+            let version = CStr::from_ptr(version_ptr)
+                .to_str()
+                .unwrap_or("unknown");
+            assert_ne!(version, "unknown");
         }
     }
 }

@@ -6,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 extern crate bindgen;
-extern crate glob;
+extern crate globwalk;
 
 fn main() {
     println!("cargo:rerun-if-env-changed=MAA_LIB_PATH");
@@ -46,22 +46,26 @@ fn main() {
     });
 }
 
-#[cfg(windows)]
+#[cfg(any(windows, target_os = "macos"))]
 fn symbolic_link_assets(asset_dir: &str, exe_dir: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     use std::{fs, os};
 
-    for asset in glob::glob(asset_dir).unwrap() {
+    for asset in globwalk::glob(asset_dir).unwrap() {
         match asset {
-            Ok(dll_origin) => {
+            Ok(dll_origin_entry) => {
+                let dll_origin = dll_origin_entry.path();
                 if dll_origin.is_dir() {
-                    panic!("请不要将文件夹命名成*.dll形式 {:?}", dll_origin)
+                    panic!("请不要将文件夹命名成*.{{dll,dylib}}形式 {:?}", dll_origin)
                 } else {
                     let dll_filename = dll_origin.file_name().unwrap().to_str().unwrap();
                     let dll_symbol = exe_dir.join(dll_filename);
                     if dll_symbol.exists() {
                         fs::remove_file(dll_symbol.clone())?;
                     }
+                    #[cfg(windows)]
                     os::windows::fs::symlink_file(dll_origin, dll_symbol)?;
+                    #[cfg(target_os = "macos")]
+                    os::unix::fs::symlink(dll_origin, dll_symbol)?;
                 };
             },
             Err(_) => unreachable!(),
@@ -69,30 +73,7 @@ fn symbolic_link_assets(asset_dir: &str, exe_dir: &PathBuf) -> Result<(), Box<dy
     }
     Ok(())
 }
-
-#[cfg(target_os = "macos")]
-fn symbolic_link_assets(asset_dir: &str, exe_dir: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-    use std::{fs, os::unix::fs::symlink};
-
-    for asset in glob::glob(asset_dir).unwrap() {
-        match asset {
-            Ok(dylib_origin) => {
-                if dylib_origin.is_dir() {
-                    panic!("请不要将文件夹命名成*.dylib形式 {:?}", dylib_origin)
-                } else {
-                    let dylib_filename = dylib_origin.file_name().unwrap().to_str().unwrap();
-                    let dylib_symbol = exe_dir.join(dylib_filename);
-                    if dylib_symbol.exists() {
-                        fs::remove_file(dylib_symbol.clone())?;
-                    }
-                    symlink(dylib_origin, dylib_symbol)?;
-                };
-            },
-            Err(_) => unreachable!(),
-        }
-    }
-    Ok(())
-}
+ 
 
 #[cfg(not(any(windows, target_os = "macos")))]
 fn symbolic_link_assets(asset_dir: &str, exe_dir: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
