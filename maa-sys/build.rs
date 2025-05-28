@@ -40,7 +40,7 @@ fn main() {
     let work_dir = vec!["../../..", "../../../deps"];
 
     work_dir.iter().for_each(|dir_path| {
-        let asset_path = Path::new(&lib_dir).join("*.dll");
+        let asset_path = Path::new(&lib_dir).join("*.{dll,dylib}");
         let exe_dir = &Path::new(&out_dir[..]).join(dir_path).canonicalize().unwrap();
         symbolic_link_assets(asset_path.to_str().unwrap(), exe_dir).unwrap();
     });
@@ -70,7 +70,31 @@ fn symbolic_link_assets(asset_dir: &str, exe_dir: &PathBuf) -> Result<(), Box<dy
     Ok(())
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+fn symbolic_link_assets(asset_dir: &str, exe_dir: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    use std::{fs, os::unix::fs::symlink};
+
+    for asset in glob::glob(asset_dir).unwrap() {
+        match asset {
+            Ok(dylib_origin) => {
+                if dylib_origin.is_dir() {
+                    panic!("请不要将文件夹命名成*.dylib形式 {:?}", dylib_origin)
+                } else {
+                    let dylib_filename = dylib_origin.file_name().unwrap().to_str().unwrap();
+                    let dylib_symbol = exe_dir.join(dylib_filename);
+                    if dylib_symbol.exists() {
+                        fs::remove_file(dylib_symbol.clone())?;
+                    }
+                    symlink(dylib_origin, dylib_symbol)?;
+                };
+            },
+            Err(_) => unreachable!(),
+        }
+    }
+    Ok(())
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
 fn symbolic_link_assets(asset_dir: &str, exe_dir: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     unimplemented!()
 }
