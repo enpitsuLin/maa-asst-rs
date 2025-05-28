@@ -1,6 +1,7 @@
 mod raw;
 pub mod task;
 
+use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::ptr::NonNull;
 use std::sync::Once;
@@ -61,7 +62,9 @@ pub enum InstanceOptionKey {
 /// MAA助手的主要结构体
 pub struct Assistant {
     handle: NonNull<raw::AsstExtAPI>,
+    /// 连接的目标设备
     target: Option<String>,
+    tasks: HashMap<i32, Box<dyn task::Task>>,
 }
 
 impl Assistant {
@@ -116,7 +119,11 @@ impl Assistant {
 
         let handle = unsafe { raw::AsstCreate() };
         NonNull::new(handle)
-            .map(|handle| Self { handle, target: None })
+            .map(|handle| Self { 
+                handle, 
+                target: None,
+                tasks: HashMap::new(),
+            })
             .ok_or(Error::CreateFailed)
     }
 
@@ -135,7 +142,11 @@ impl Assistant {
 
         let handle = unsafe { raw::AsstCreateEx(callback, custom_arg) };
         NonNull::new(handle)
-            .map(|handle| Self { handle, target: None })
+            .map(|handle| Self { 
+                handle, 
+                target: None,
+                tasks: HashMap::new(),
+            })
             .ok_or(Error::CreateFailed)
     }
 
@@ -169,13 +180,14 @@ impl Assistant {
     ///
     /// # Returns
     /// * `i32` - 任务ID
-    pub fn append_task(&mut self, task: impl task::Task) -> Result<i32, Error> {
+    pub fn append_task(&mut self, task: impl task::Task + 'static) -> Result<i32, Error> {
         let type_str = CString::new(task.task_type()).unwrap();
         let params_str = CString::new(task.to_json()).unwrap();
 
         unsafe {
             let task_id = raw::AsstAppendTask(self.handle.as_ptr(), type_str.as_ptr(), params_str.as_ptr());
             if task_id != 0 {
+                self.tasks.insert(task_id, Box::from(task));
                 Ok(task_id)
             } else {
                 Err(Error::TaskAppendFailed)
