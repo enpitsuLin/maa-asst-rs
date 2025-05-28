@@ -4,23 +4,37 @@ pub mod task;
 use std::ffi::{CStr, CString};
 use std::ptr::NonNull;
 use std::sync::Once;
+use thiserror::Error;
 
 static INIT: Once = Once::new();
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum Error {
+    #[error("资源加载失败")]
     ResourceLoadFailed,
+    #[error("创建实例失败")]
     CreateFailed,
+    #[error("连接失败")]
+    ConnectFailed,
+    #[error("任务添加失败")]
+    TaskAppendFailed,
+    #[error("任务参数设置失败")]
+    TaskParamsSetFailed,
+    #[error("启动失败")]
+    StartFailed,
+    #[error("停止失败")]
+    StopFailed,
+    #[error("返回主页失败")]
+    BackToHomeFailed,
+    #[error("未知错误")]
     Unknown,
 }
 
 pub enum StaticOptionKey {
     /// 无效
     Invalid,
-
     /// 用CPU进行OCR
     CpuOCR,
-
     /// 用GPU进行OCR
     GpuOCR,
 }
@@ -52,19 +66,41 @@ pub struct Assistant {
 
 impl Assistant {
     /// 初始化MAA资源
-    fn init_resources(resource_dir: &str) -> bool {
+    fn init_resources(resource_dir: &str) -> Result<(), Error> {
         let resource_path = CString::new(resource_dir).unwrap();
-        unsafe { raw::AsstLoadResource(resource_path.as_ptr()) != 0 }
+        unsafe {
+            if raw::AsstLoadResource(resource_path.as_ptr()) != 0 {
+                Ok(())
+            } else {
+                Err(Error::ResourceLoadFailed)
+            }
+        }
     }
 
-    pub fn set_instance_option(&mut self, key: InstanceOptionKey, value: impl Into<String>) -> bool {
+    pub fn set_instance_option(
+        &mut self,
+        key: InstanceOptionKey,
+        value: impl Into<String>,
+    ) -> Result<(), Error> {
         let value_str = CString::new(value.into()).unwrap();
-        unsafe { raw::AsstSetInstanceOption(self.handle.as_ptr(), key as i32, value_str.as_ptr()) != 0 }
+        unsafe {
+            if raw::AsstSetInstanceOption(self.handle.as_ptr(), key as i32, value_str.as_ptr()) != 0 {
+                Ok(())
+            } else {
+                Err(Error::Unknown)
+            }
+        }
     }
 
-    pub fn set_static_option(key: StaticOptionKey, value: impl Into<String>) -> bool {
+    pub fn set_static_option(key: StaticOptionKey, value: impl Into<String>) -> Result<(), Error> {
         let value_str = CString::new(value.into()).unwrap();
-        unsafe { raw::AsstSetStaticOption(key as i32, value_str.as_ptr()) != 0 }
+        unsafe {
+            if raw::AsstSetStaticOption(key as i32, value_str.as_ptr()) != 0 {
+                Ok(())
+            } else {
+                Err(Error::Unknown)
+            }
+        }
     }
 
     /// 创建一个新的Assistant实例
@@ -76,14 +112,7 @@ impl Assistant {
     /// * `Ok(Assistant)` - 创建成功
     /// * `Err(Error)` - 创建失败，可能是资源加载失败或实例创建失败
     pub fn new(resource_dir: &str) -> Result<Self, Error> {
-        let mut success = true;
-        INIT.call_once(|| {
-            success = Self::init_resources(resource_dir);
-        });
-
-        if !success {
-            return Err(Error::ResourceLoadFailed);
-        }
+        INIT.call_once(|| Self::init_resources(resource_dir).unwrap());
 
         let handle = unsafe { raw::AsstCreate() };
         NonNull::new(handle)
@@ -102,14 +131,7 @@ impl Assistant {
         callback: raw::AsstApiCallback,
         custom_arg: *mut std::ffi::c_void,
     ) -> Result<Self, Error> {
-        let mut success = true;
-        INIT.call_once(|| {
-            success = Self::init_resources(resource_dir);
-        });
-
-        if !success {
-            return Err(Error::ResourceLoadFailed);
-        }
+        INIT.call_once(|| Self::init_resources(resource_dir).unwrap());
 
         let handle = unsafe { raw::AsstCreateEx(callback, custom_arg) };
         NonNull::new(handle)
@@ -135,7 +157,7 @@ impl Assistant {
                 self.target = Some(address.to_string());
                 Ok(())
             } else {
-                Err(Error::Unknown)
+                Err(Error::ConnectFailed)
             }
         }
     }
@@ -147,37 +169,67 @@ impl Assistant {
     ///
     /// # Returns
     /// * `i32` - 任务ID
-    pub fn append_task(&mut self, task: impl task::Task) -> i32 {
+    pub fn append_task(&mut self, task: impl task::Task) -> Result<i32, Error> {
         let type_str = CString::new(task.task_type()).unwrap();
         let params_str = CString::new(task.to_json()).unwrap();
 
-        unsafe { raw::AsstAppendTask(self.handle.as_ptr(), type_str.as_ptr(), params_str.as_ptr()) }
+        unsafe {
+            let task_id = raw::AsstAppendTask(self.handle.as_ptr(), type_str.as_ptr(), params_str.as_ptr());
+            if task_id != 0 {
+                Ok(task_id)
+            } else {
+                Err(Error::TaskAppendFailed)
+            }
+        }
     }
 
-    pub fn set_task_params(&mut self, task_id: i32, params: Option<&str>) -> bool {
+    pub fn set_task_params(&mut self, task_id: i32, params: Option<&str>) -> Result<(), Error> {
         let params_str = params.map(|p| CString::new(p).unwrap());
         unsafe {
-            raw::AsstSetTaskParams(
+            let ret = raw::AsstSetTaskParams(
                 self.handle.as_ptr(),
                 task_id,
                 params_str.as_ref().map_or(std::ptr::null(), |cs| cs.as_ptr()),
-            ) != 0
+            );
+            if ret != 0 {
+                Ok(())
+            } else {
+                Err(Error::TaskParamsSetFailed)
+            }
         }
     }
 
     /// 启动助手
-    pub fn start(&mut self) -> bool {
-        unsafe { raw::AsstStart(self.handle.as_ptr()) != 0 }
+    pub fn start(&mut self) -> Result<(), Error> {
+        unsafe {
+            if raw::AsstStart(self.handle.as_ptr()) != 0 {
+                Ok(())
+            } else {
+                Err(Error::StartFailed)
+            }
+        }
     }
 
     /// 停止助手
-    pub fn stop(&mut self) -> bool {
-        unsafe { raw::AsstStop(self.handle.as_ptr()) != 0 }
+    pub fn stop(&mut self) -> Result<(), Error> {
+        unsafe {
+            if raw::AsstStop(self.handle.as_ptr()) != 0 {
+                Ok(())
+            } else {
+                Err(Error::StopFailed)
+            }
+        }
     }
 
     /// 返回主页
-    pub fn back_to_home(&mut self) -> bool {
-        unsafe { raw::AsstBackToHome(self.handle.as_ptr()) != 0 }
+    pub fn back_to_home(&mut self) -> Result<(), Error> {
+        unsafe {
+            if raw::AsstBackToHome(self.handle.as_ptr()) != 0 {
+                Ok(())
+            } else {
+                Err(Error::BackToHomeFailed)
+            }
+        }
     }
 
     /// 检查是否正在运行

@@ -21,8 +21,8 @@ fn main() {
     let mut assistant = Assistant::new(resource_path).unwrap();
 
     // 未 Root 的设备使用 adb 模式
-    assistant.set_instance_option(InstanceOptionKey::TouchMode, "adb");
-    assistant.connect("adb", "192.168.20.29:40351", None);
+    assistant.set_instance_option(InstanceOptionKey::TouchMode, "adb").unwrap();
+    assistant.connect("adb", "192.168.20.29:40351", None).unwrap();
 
     if !assistant.is_connected() {
         println!("connect failed");
