@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, Data, DeriveInput, Fields, Type};
+use syn::{parse_macro_input, Attribute, Data, DeriveInput, Fields, Type};
 
 /// 为结构体自动实现 Task trait 和 Builder 模式
 #[proc_macro_derive(Task, attributes(task_type))]
@@ -38,10 +38,12 @@ pub fn derive_maa_task(input: TokenStream) -> TokenStream {
         let name = &f.ident;
         let ty = &f.ty;
         let inner_ty = get_inner_type(ty);
+        let doc = get_doc_attrs(&f.attrs);
 
         if is_option_type(ty) {
             if is_string_type(&inner_ty) {
                 quote! {
+                    #(#doc)*
                     pub fn #name(mut self, #name: impl Into<String>) -> Self {
                         self.#name = Some(#name.into());
                         self
@@ -49,6 +51,7 @@ pub fn derive_maa_task(input: TokenStream) -> TokenStream {
                 }
             } else {
                 quote! {
+                    #(#doc)*
                     pub fn #name(mut self, #name: #inner_ty) -> Self {
                         self.#name = Some(#name);
                         self
@@ -58,6 +61,7 @@ pub fn derive_maa_task(input: TokenStream) -> TokenStream {
         } else {
             if is_string_type(ty) {
                 quote! {
+                    #(#doc)*
                     pub fn #name(mut self, #name: impl Into<String>) -> Self {
                         self.#name = Some(#name.into());
                         self
@@ -65,6 +69,7 @@ pub fn derive_maa_task(input: TokenStream) -> TokenStream {
                 }
             } else {
                 quote! {
+                    #(#doc)*
                     pub fn #name(mut self, #name: #ty) -> Self {
                         self.#name = Some(#name);
                         self
@@ -170,4 +175,13 @@ fn is_string_type(ty: &Type) -> bool {
         }
     }
     false
+}
+
+/// 从属性中获取文档注释
+fn get_doc_attrs(attrs: &[Attribute]) -> Vec<syn::Attribute> {
+    attrs
+        .iter()
+        .filter(|attr| attr.path().is_ident("doc"))
+        .cloned()
+        .collect()
 }
