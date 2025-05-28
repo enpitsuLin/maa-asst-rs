@@ -16,19 +16,19 @@ fn pause() {
     let _ = stdin.read(&mut [0u8]).unwrap();
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let resource_path = env!("MAA_RESOURCE_PATH");
-    let mut assistant = Assistant::new(resource_path).unwrap();
+    let mut assistant = Assistant::new(resource_path)?;
 
     // 未 Root 的设备使用 adb 模式
-    assistant.set_instance_option(InstanceOptionKey::TouchMode, "adb").unwrap();
-    assistant.connect("adb", "192.168.20.29:40351", None).unwrap();
+    assistant.set_instance_option(InstanceOptionKey::TouchMode, "adb")?;
+    assistant.connect("adb", "192.168.20.29:40351", None)?;
 
     if !assistant.is_connected() {
         println!("connect failed");
         drop(assistant);
         pause();
-        return;
+        return Ok(());
     }
 
     assistant.append_task(
@@ -38,7 +38,8 @@ fn main() {
             .start_game_enabled(true)
             .account_name("123****4567")
             .build(),
-    );
+    )?;
+
     assistant.append_task(
         FightTask::builder()
             .enable(true)
@@ -46,10 +47,12 @@ fn main() {
             .medicine(3)
             .times(5)
             .build(),
-    );
-    assistant.start();
+    )?;
+
+    assistant.start()?;
     println!("should be running");
     pause();
-    assistant.stop();
+    assistant.stop()?;
     drop(assistant);
+    Ok(())
 }
