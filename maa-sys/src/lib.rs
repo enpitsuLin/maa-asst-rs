@@ -119,8 +119,8 @@ impl Assistant {
 
         let handle = unsafe { raw::AsstCreate() };
         NonNull::new(handle)
-            .map(|handle| Self { 
-                handle, 
+            .map(|handle| Self {
+                handle,
                 target: None,
                 tasks: HashMap::new(),
             })
@@ -142,8 +142,8 @@ impl Assistant {
 
         let handle = unsafe { raw::AsstCreateEx(callback, custom_arg) };
         NonNull::new(handle)
-            .map(|handle| Self { 
-                handle, 
+            .map(|handle| Self {
+                handle,
                 target: None,
                 tasks: HashMap::new(),
             })
@@ -255,11 +255,12 @@ impl Assistant {
     }
 
     /// 获取版本信息
-    pub fn version() -> &'static str {
+    pub fn version() -> Result<String, Error> {
         unsafe {
             CStr::from_ptr(raw::AsstGetVersion())
                 .to_str()
-                .unwrap_or("unknown")
+                .map(|s| s.to_string())
+                .map_err(|_| Error::Unknown)
         }
     }
 }
@@ -275,3 +276,14 @@ impl Drop for Assistant {
 // 确保Assistant可以安全地在线程间传递
 unsafe impl Send for Assistant {}
 unsafe impl Sync for Assistant {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_version() {
+        let version = Assistant::version().unwrap();
+        assert_ne!(version, "");
+    }
+}
