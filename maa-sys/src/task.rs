@@ -8,6 +8,7 @@ use serde_with::skip_serializing_none;
 pub trait Task {
     fn task_type(&self) -> &'static str;
     fn to_json(&self) -> String;
+    fn from_json(json: &str) -> Result<Self, serde_json::Error> where Self: Sized;
 }
 
 /// 开始唤醒任务的参数
@@ -827,5 +828,14 @@ mod tests {
             RecruitTask::builder().enable(true).build();
         });
         assert!(result.is_err(), "必选字段未设置应该 panic");
+    }
+
+    #[test]
+    fn test_from_json() {
+        let json = r#"{"enable":true,"select":[1,2,3],"confirm":[4,5,6]}"#;
+        let task = RecruitTask::from_json(json).unwrap();
+        assert_eq!(Some(true), task.enable, "task.enable");
+        assert_eq!(vec![1, 2, 3], task.select, "task.select");
+        assert_eq!(vec![4, 5, 6], task.confirm, "task.confirm");
     }
 }

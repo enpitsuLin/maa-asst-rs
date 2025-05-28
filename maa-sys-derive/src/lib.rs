@@ -102,6 +102,10 @@ pub fn derive_maa_task(input: TokenStream) -> TokenStream {
             fn to_json(&self) -> String {
                 serde_json::to_string(self).unwrap()
             }
+
+            fn from_json(json: &str) -> Result<Self, serde_json::Error> {
+                serde_json::from_str(json)
+            }
         }
 
         #[derive(Default)]
