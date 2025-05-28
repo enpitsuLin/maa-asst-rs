@@ -17,7 +17,7 @@ fn pause() {
 }
 
 fn main() {
-    let resource_path = env!("MAA_RESOUCE_PATH");
+    let resource_path = env!("MAA_RESOURCE_PATH");
     let mut assistant = Assistant::new(resource_path).unwrap();
 
     assistant.connect("adb", "127.0.0.1:62001", None);
