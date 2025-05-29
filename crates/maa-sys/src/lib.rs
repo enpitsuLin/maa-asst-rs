@@ -301,6 +301,13 @@ impl Assistant {
         unsafe { raw::AsstConnected(self.handle.as_ptr()) != 0 }
     }
 
+    /// 打印日志
+    pub fn log(level: &str, message: &str) {
+        let level_cstr = CString::new(level).unwrap();
+        let message_cstr = CString::new(message).unwrap();
+        unsafe { raw::AsstLog(level_cstr.as_ptr(), message_cstr.as_ptr()) }
+    }
+
     /// 获取版本信息
     pub fn version() -> Result<String, Error> {
         unsafe {
@@ -344,14 +351,16 @@ mod tests {
     #[test]
     fn test_get_tasks_list() {
         let mut assistant = Assistant::new(env!("MAA_RESOURCE_PATH")).unwrap();
-        assistant.append_task(
-            task::StartUpTask::builder()
-                .enable(true)
-                .client_type("Official")
-                .start_game_enabled(true)
-                .account_name("123****4567")
-                .build(),
-        ).unwrap();
+        assistant
+            .append_task(
+                task::StartUpTask::builder()
+                    .enable(true)
+                    .client_type("Official")
+                    .start_game_enabled(true)
+                    .account_name("123****4567")
+                    .build(),
+            )
+            .unwrap();
 
         let tasks = assistant.get_tasks_list().unwrap();
         assert!(!tasks.is_empty());
