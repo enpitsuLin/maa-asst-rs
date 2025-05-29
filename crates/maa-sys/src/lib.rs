@@ -27,6 +27,10 @@ pub enum Error {
     StopFailed,
     #[error("返回主页失败")]
     BackToHomeFailed,
+    #[error("点击失败")]
+    ClickFailed,
+    #[error("截图失败")]
+    CaptureFailed,
     #[error("未知错误")]
     Unknown,
 }
@@ -229,6 +233,26 @@ impl Assistant {
                 Ok(())
             } else {
                 Err(Error::StopFailed)
+            }
+        }
+    }
+
+    pub fn click(&mut self, x: i32, y: i32) -> Result<(), Error> {
+        unsafe {
+            if raw::AsstAsyncClick(self.handle.as_ptr(), x, y, 1) != 0 {
+                Ok(())
+            } else {
+                Err(Error::ClickFailed)
+            }
+        }
+    }
+
+    pub fn capture_screenshot(&mut self) -> Result<(), Error> {
+        unsafe {
+            if raw::AsstAsyncScreencap(self.handle.as_ptr(), 1) != 0 {
+                Ok(())
+            } else {
+                Err(Error::CaptureFailed)
             }
         }
     }
