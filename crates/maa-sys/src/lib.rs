@@ -244,6 +244,53 @@ impl Assistant {
         }
     }
 
+    pub fn get_null_size() -> u64 {
+        unsafe { raw::AsstGetNullSize() }
+    }
+
+    pub fn get_uuid(&self) -> Result<String, Error> {
+        unsafe {
+            let mut buff_size = 1024;
+            loop {
+                if buff_size > 1024 * 1024 {
+                    return Err(Error::Unknown);
+                }
+                let mut buff: Vec<u8> = Vec::with_capacity(buff_size);
+                let data_size = raw::AsstGetUUID(
+                    self.handle.as_ptr(),
+                    buff.as_mut_ptr() as *mut i8,
+                    buff_size as u64,
+                );
+                if data_size == Self::get_null_size() {
+                    buff_size = 2 * buff_size;
+                    continue;
+                }
+                buff.set_len(data_size as usize);
+                let ret = String::from_utf8_lossy(&buff).to_string();
+
+                return Ok(ret);
+            }
+        }
+    }
+
+    pub fn get_tasks_list(&self) -> Result<Vec<&dyn task::Task>, Box<dyn std::error::Error>> {
+        let mut list: Vec<i32> = Vec::with_capacity(1000);
+        unsafe {
+            let buff = list.as_mut_ptr();
+            let data_size = raw::AsstGetTasksList(self.handle.as_ptr(), buff, list.capacity().try_into()?);
+            list.set_len(data_size.try_into()?);
+            list.shrink_to_fit();
+
+            let ret = list
+                .iter()
+                .filter_map(|id| self.tasks.get(id))
+                .map(|task| task.as_ref())
+                .collect();
+
+            Ok(ret)
+        }
+    }
+
     /// 检查是否正在运行
     pub fn is_running(&self) -> bool {
         unsafe { raw::AsstRunning(self.handle.as_ptr()) != 0 }
@@ -285,5 +332,30 @@ mod tests {
     fn test_version() {
         let version = Assistant::version().unwrap();
         assert_ne!(version, "");
+    }
+
+    #[test]
+    fn test_get_uuid() {
+        let assistant = Assistant::new(env!("MAA_RESOURCE_PATH")).unwrap();
+        let uuid = assistant.get_uuid().unwrap();
+        assert_ne!(uuid, "");
+    }
+
+    #[test]
+    fn test_get_tasks_list() {
+        let mut assistant = Assistant::new(env!("MAA_RESOURCE_PATH")).unwrap();
+        assistant.append_task(
+            task::StartUpTask::builder()
+                .enable(true)
+                .client_type("Official")
+                .start_game_enabled(true)
+                .account_name("123****4567")
+                .build(),
+        ).unwrap();
+
+        let tasks = assistant.get_tasks_list().unwrap();
+        assert!(!tasks.is_empty());
+        assert_eq!(tasks.len(), 1);
+        assert_eq!(tasks[0].task_type(), "StartUp");
     }
 }
