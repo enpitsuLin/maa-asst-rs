@@ -1,19 +1,11 @@
 use maa_sys::task::{FightTask, StartUpTask};
 use maa_sys::{Assistant, InstanceOptionKey};
-use std::io::prelude::*;
-use std::{env, io};
+use std::env;
 
-/// 参考 https://users.rust-lang.org/t/rusts-equivalent-of-cs-system-pause/4494/4
 fn pause() {
-    let mut stdin = io::stdin();
-    let mut stdout = io::stdout();
-
-    // We want the cursor to stay at the end of the line, so we print without a newline and flush manually.
-    write!(stdout, "Press any key to continue...").unwrap();
-    stdout.flush().unwrap();
-
-    // Read a single byte and discard
-    let _ = stdin.read(&mut [0u8]).unwrap();
+    println!("按任意键继续...");
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input).unwrap();
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

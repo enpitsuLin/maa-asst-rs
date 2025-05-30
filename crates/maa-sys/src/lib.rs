@@ -1,3 +1,4 @@
+mod message;
 mod raw;
 pub mod task;
 
@@ -62,6 +63,9 @@ pub enum InstanceOptionKey {
     /// 退出时是否杀掉 Adb 进程， "0" | "1"
     KillAdbOnExit = 5,
 }
+
+/// 回调函数类型
+pub type CallbackFn = Box<dyn Fn(i32, String) + Send + 'static>;
 
 /// MAA助手的主要结构体
 pub struct Assistant {
@@ -135,16 +139,31 @@ impl Assistant {
     ///
     /// # Arguments
     /// * `resource_dir` - 资源文件夹的路径
-    /// * `callback` - 回调函数
-    /// * `custom_arg` - 自定义参数
+    /// * `callback` - 回调函数，接收消息ID和JSON详情
+
     pub fn new_with_callback(
         resource_dir: &str,
-        callback: raw::AsstApiCallback,
-        custom_arg: *mut std::ffi::c_void,
+        callback: impl FnMut(message::AsstMsg, serde_json::Value) + Send + 'static,
     ) -> Result<Self, Error> {
         INIT.call_once(|| Self::init_resources(resource_dir).unwrap());
 
-        let handle = unsafe { raw::AsstCreateEx(callback, custom_arg) };
+        let processor = message::Processor::from(callback);
+
+        let processor_ptr = Box::into_raw(Box::new(processor));
+
+        pub unsafe extern "C" fn raw_callback(
+            msg_id: i32,
+            details_json: *const ::std::os::raw::c_char,
+            user_data: *mut ::std::os::raw::c_void,
+        ) {
+            let json_str = std::ffi::CStr::from_ptr(details_json).to_str().unwrap();
+            let details: serde_json::Value = serde_json::from_str(json_str).unwrap();
+            let processor = &mut *(user_data as *mut message::Processor);
+            let asst_msg = message::AsstMsg::from(msg_id);
+            (processor.callback)(asst_msg, details);
+        }
+
+        let handle = unsafe { raw::AsstCreateEx(Some(raw_callback), processor_ptr as *mut _) };
         NonNull::new(handle)
             .map(|handle| Self {
                 handle,
@@ -390,5 +409,25 @@ mod tests {
         assert!(!tasks.is_empty());
         assert_eq!(tasks.len(), 1);
         assert_eq!(tasks[0].task_type(), "StartUp");
+    }
+
+    #[test]
+    fn test_connect_device() {
+        println!("开始测试连接设备...");
+
+        println!("创建 Assistant 实例...");
+        // 创建 Assistant 实例
+        let callback = |msg_id: message::AsstMsg, details: serde_json::Value| {
+            let details_json = details.to_string();
+            println!("收到回调: msg_id={}, details={:?}", msg_id, details_json);
+        };
+
+        let mut assistant = Assistant::new_with_callback(env!("MAA_RESOURCE_PATH"), callback).unwrap();
+
+        assistant.connect("adb", "192.168.20.29:45147", None).unwrap();
+
+        println!("按任意键继续...");
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).unwrap();
     }
 }
