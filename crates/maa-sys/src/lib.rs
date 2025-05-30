@@ -151,9 +151,12 @@ impl Assistant {
     /// # Arguments
     /// * `resource_dir` - 资源文件夹的路径
     /// * `callback` - 回调函数，接收消息ID和JSON详情
-    pub fn new_with_callback<P: AsRef<Path>>(
+    pub fn new_with_callback<
+        P: AsRef<Path>,
+        F: FnMut(message::AsstMsg, serde_json::Value) + Send + 'static,
+    >(
         path: P,
-        callback: impl FnMut(message::AsstMsg, serde_json::Value) + Send + 'static,
+        callback: F,
     ) -> Result<Self, Error> {
         INIT.call_once(|| Self::load_resource(path).unwrap());
 
@@ -201,7 +204,7 @@ impl Assistant {
     ///
     /// # Returns
     /// * `i32` - 任务ID
-    pub fn append_task(&mut self, task: impl task::Task + 'static) -> Result<i32, Error> {
+    pub fn append_task<T: task::Task + 'static>(&mut self, task: T) -> Result<i32, Error> {
         let type_str = CString::new(task.task_type()).unwrap();
         let params_str = CString::new(task.to_json()).unwrap();
 
@@ -219,11 +222,7 @@ impl Assistant {
     pub fn set_task_params<T: task::Task + 'static>(&mut self, task_id: i32, task: T) -> Result<(), Error> {
         let params_str = CString::new(task.to_json()).unwrap();
         unsafe {
-            let ret = raw::AsstSetTaskParams(
-                self.handle.as_ptr(),
-                task_id,
-                params_str.as_ptr(),
-            );
+            let ret = raw::AsstSetTaskParams(self.handle.as_ptr(), task_id, params_str.as_ptr());
             if ret != 0 {
                 if let Some(old_task) = self.tasks.get_mut(&task_id) {
                     *old_task = Box::new(task);
