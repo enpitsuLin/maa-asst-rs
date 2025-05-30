@@ -26,8 +26,11 @@ pub enum Error {
     SetInstanceOptionFailed,
     #[error("设置选项失败")]
     SetStaticOptionFailed,
+    #[error("内容太大")]
+    ContentTooLarge(usize),
     #[error("未知错误")]
     Unknown,
+    
 }
 
 #[repr(u8)]

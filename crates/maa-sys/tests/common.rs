@@ -11,15 +11,3 @@ pub fn get_test_resource_path() -> PathBuf {
 pub fn create_test_assistant() -> maa_sys::Assistant {
     maa_sys::Assistant::new(get_test_resource_path()).expect("创建 Assistant 实例失败")
 }
-
-/// 等待助手完成操作
-pub fn wait_for_assistant(assistant: &maa_sys::Assistant, timeout_secs: u64) -> bool {
-    let start = std::time::Instant::now();
-    while assistant.is_running() {
-        if start.elapsed().as_secs() > timeout_secs {
-            return false;
-        }
-        std::thread::sleep(std::time::Duration::from_millis(100));
-    }
-    true
-}

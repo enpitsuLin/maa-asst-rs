@@ -12,6 +12,13 @@ pub use types::*;
 
 static INIT: Once = Once::new();
 
+// 一张 720p 图像，24位色深，原始大小为 1280 * 720 * 3（2.7 MB）
+// 压缩后的图像数据应小于原始大小。
+// 在大多数情况下，4MB 应该足够
+const INIT_SIZE: usize = 1024 * 1024 * 4;
+// 32MB 应该足够用于 4K 原始图像，但实际使用中可能不需要这么大
+const MAX_SIZE: usize = 1024 * 1024 * 32;
+
 /// MAA助手的主要结构体
 /// 负责管理与设备的连接、任务执行和资源控制
 pub struct Assistant {
@@ -294,12 +301,52 @@ impl Assistant {
     /// # Returns
     /// * `Ok(())` - 截图成功
     /// * `Err(Error::CaptureFailed)` - 截图失败
-    pub fn capture_screenshot(&mut self) -> Result<(), Error> {
+    pub fn capture_screenshot(&self) -> Result<(), Error> {
         unsafe {
             if raw::AsstAsyncScreencap(self.handle.as_ptr(), 1) != 0 {
                 Ok(())
             } else {
                 Err(Error::CaptureFailed)
+            }
+        }
+    }
+
+    fn get_image_with_buf(&self, buf: *mut u8, size: usize) -> Result<raw::AsstSize, Error> {
+        unsafe {
+            let ret = raw::AsstGetImage(
+                self.handle.as_ptr(),
+                buf as *mut std::os::raw::c_void,
+                size as raw::AsstSize,
+            );
+
+            println!("ret: {}", ret);
+            if ret != 0 {
+                Ok(ret)
+            } else {
+                Err(Error::CaptureFailed)
+            }
+        }
+    }
+
+    pub fn get_image(&self) -> Result<Vec<u8>, Error> {
+        let mut buf_size = INIT_SIZE;
+        let mut buf = Vec::with_capacity(buf_size);
+
+        loop {
+            match self.get_image_with_buf(buf.as_mut_ptr(), buf_size) {
+                Ok(size) => {
+                    // Safety: the buffer is initialized by FFI, the size is the actual size
+                    unsafe { buf.set_len(size as usize) };
+                    return Ok(buf);
+                },
+                Err(_) => {
+                    if buf_size > MAX_SIZE {
+                        return Err(Error::ContentTooLarge(MAX_SIZE));
+                    }
+                    // Double the buffer size if it's not enough
+                    buf_size *= 2;
+                    buf.reserve(buf_size);
+                },
             }
         }
     }
