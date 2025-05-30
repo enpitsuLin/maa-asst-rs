@@ -216,15 +216,18 @@ impl Assistant {
         }
     }
 
-    pub fn set_task_params(&mut self, task_id: i32, params: Option<&str>) -> Result<(), Error> {
-        let params_str = params.map(|p| CString::new(p).unwrap());
+    pub fn set_task_params<T: task::Task + 'static>(&mut self, task_id: i32, task: T) -> Result<(), Error> {
+        let params_str = CString::new(task.to_json()).unwrap();
         unsafe {
             let ret = raw::AsstSetTaskParams(
                 self.handle.as_ptr(),
                 task_id,
-                params_str.as_ref().map_or(std::ptr::null(), |cs| cs.as_ptr()),
+                params_str.as_ptr(),
             );
             if ret != 0 {
+                if let Some(old_task) = self.tasks.get_mut(&task_id) {
+                    *old_task = Box::new(task);
+                }
                 Ok(())
             } else {
                 Err(Error::TaskParamsSetFailed)
