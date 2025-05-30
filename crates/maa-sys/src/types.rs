@@ -22,6 +22,10 @@ pub enum Error {
     ClickFailed,
     #[error("截图失败")]
     CaptureFailed,
+    #[error("设置实例选项失败")]
+    SetInstanceOptionFailed,
+    #[error("设置选项失败")]
+    SetStaticOptionFailed,
     #[error("未知错误")]
     Unknown,
 }

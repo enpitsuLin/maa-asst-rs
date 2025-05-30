@@ -13,14 +13,22 @@ pub use types::*;
 static INIT: Once = Once::new();
 
 /// MAA助手的主要结构体
+/// 负责管理与设备的连接、任务执行和资源控制
 pub struct Assistant {
+    /// 指向底层C++ API的指针
     handle: NonNull<raw::AsstExtAPI>,
-    /// 连接的目标设备
+    /// 当前连接的设备地址，如果未连接则为None
     target: Option<String>,
+    /// 存储所有已添加的任务，键为任务ID
     tasks: HashMap<i32, Box<dyn task::Task>>,
 }
 
-/// 将 Rust 的回调函数转换为 C 的回调函数
+/// 将Rust的回调函数转换为C的回调函数
+///
+/// # Arguments
+/// * `msg_id` - 消息ID
+/// * `details_json` - JSON格式的消息详情
+/// * `user_data` - 用户数据指针，指向消息处理器
 pub unsafe extern "C" fn callback_wrapper(
     msg_id: i32,
     details_json: *const ::std::os::raw::c_char,
@@ -34,6 +42,14 @@ pub unsafe extern "C" fn callback_wrapper(
 }
 
 impl Assistant {
+    /// 加载MAA助手所需的资源文件
+    ///
+    /// # Arguments
+    /// * `path` - 资源文件夹的路径
+    ///
+    /// # Returns
+    /// * `Ok(())` - 资源加载成功
+    /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
     fn load_resource<P: AsRef<Path>>(path: P) -> Result<(), Error> {
         let path = path.as_ref();
         let resource_path = CString::new(path.to_string_lossy().as_ref()).unwrap();
@@ -46,6 +62,15 @@ impl Assistant {
         }
     }
 
+    /// 设置实例级别的选项
+    ///
+    /// # Arguments
+    /// * `key` - 选项键
+    /// * `value` - 选项值
+    ///
+    /// # Returns
+    /// * `Ok(())` - 设置成功
+    /// * `Err(Error::SetInstanceOptionFailed)` - 设置失败
     pub fn set_instance_option(
         &mut self,
         key: InstanceOptionKey,
@@ -56,18 +81,27 @@ impl Assistant {
             if raw::AsstSetInstanceOption(self.handle.as_ptr(), key as i32, value_str.as_ptr()) != 0 {
                 Ok(())
             } else {
-                Err(Error::Unknown)
+                Err(Error::SetInstanceOptionFailed)
             }
         }
     }
 
+    /// 设置全局静态选项
+    ///
+    /// # Arguments
+    /// * `key` - 选项键
+    /// * `value` - 选项值
+    ///
+    /// # Returns
+    /// * `Ok(())` - 设置成功
+    /// * `Err(Error::SetStaticOptionFailed)` - 设置失败
     pub fn set_static_option(key: StaticOptionKey, value: impl Into<String>) -> Result<(), Error> {
         let value_str = CString::new(value.into()).unwrap();
         unsafe {
             if raw::AsstSetStaticOption(key as i32, value_str.as_ptr()) != 0 {
                 Ok(())
             } else {
-                Err(Error::Unknown)
+                Err(Error::SetStaticOptionFailed)
             }
         }
     }
@@ -75,11 +109,12 @@ impl Assistant {
     /// 创建一个新的Assistant实例
     ///
     /// # Arguments
-    /// * `resource_dir` - 资源文件夹的路径
+    /// * `path` - 资源文件夹的路径
     ///
     /// # Returns
     /// * `Ok(Assistant)` - 创建成功
-    /// * `Err(Error)` - 创建失败，可能是资源加载失败或实例创建失败
+    /// * `Err(Error::CreateFailed)` - 创建失败
+    /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
     pub fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
         INIT.call_once(|| Self::load_resource(path).unwrap());
 
@@ -96,8 +131,13 @@ impl Assistant {
     /// 创建一个带有回调函数的Assistant实例
     ///
     /// # Arguments
-    /// * `resource_dir` - 资源文件夹的路径
-    /// * `callback` - 回调函数，接收消息ID和JSON详情
+    /// * `path` - 资源文件夹的路径
+    /// * `callback` - 回调函数，用于处理助手发送的消息
+    ///
+    /// # Returns
+    /// * `Ok(Assistant)` - 创建成功
+    /// * `Err(Error::CreateFailed)` - 创建失败
+    /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
     pub fn new_with_callback<
         P: AsRef<Path>,
         F: FnMut(message::AsstMsg, serde_json::Value) + Send + 'static,
@@ -121,7 +161,16 @@ impl Assistant {
             .ok_or(Error::CreateFailed)
     }
 
-    /// 连接到设备
+    /// 连接到指定的设备
+    ///
+    /// # Arguments
+    /// * `adb_path` - ADB可执行文件的路径
+    /// * `address` - 设备地址（如：127.0.0.1:5555）
+    /// * `config` - 可选的连接配置
+    ///
+    /// # Returns
+    /// * `Ok(())` - 连接成功
+    /// * `Err(Error::ConnectFailed)` - 连接失败
     pub fn connect(&mut self, adb_path: &str, address: &str, config: Option<&str>) -> Result<(), Error> {
         let adb_path = CString::new(adb_path).unwrap();
         let address_cstr = CString::new(address).unwrap();
@@ -144,13 +193,14 @@ impl Assistant {
         }
     }
 
-    /// 添加任务
+    /// 添加新的任务到任务队列
     ///
     /// # Arguments
-    /// * `task` - 实现了Task trait的任务类型
+    /// * `task` - 实现了Task trait的任务实例
     ///
     /// # Returns
-    /// * `i32` - 任务ID
+    /// * `Ok(i32)` - 任务ID
+    /// * `Err(Error::TaskAppendFailed)` - 任务添加失败
     pub fn append_task<T: task::Task + 'static>(&mut self, task: T) -> Result<i32, Error> {
         let type_str = CString::new(task.task_type()).unwrap();
         let params_str = CString::new(task.to_json()).unwrap();
@@ -166,6 +216,15 @@ impl Assistant {
         }
     }
 
+    /// 更新已存在任务的参数
+    ///
+    /// # Arguments
+    /// * `task_id` - 要更新的任务ID
+    /// * `task` - 新的任务参数
+    ///
+    /// # Returns
+    /// * `Ok(())` - 更新成功
+    /// * `Err(Error::TaskParamsSetFailed)` - 更新失败
     pub fn set_task_params<T: task::Task + 'static>(&mut self, task_id: i32, task: T) -> Result<(), Error> {
         let params_str = CString::new(task.to_json()).unwrap();
         unsafe {
@@ -181,7 +240,11 @@ impl Assistant {
         }
     }
 
-    /// 启动助手
+    /// 启动助手开始执行任务
+    ///
+    /// # Returns
+    /// * `Ok(())` - 启动成功
+    /// * `Err(Error::StartFailed)` - 启动失败
     pub fn start(&mut self) -> Result<(), Error> {
         unsafe {
             if raw::AsstStart(self.handle.as_ptr()) != 0 {
@@ -192,7 +255,11 @@ impl Assistant {
         }
     }
 
-    /// 停止助手
+    /// 停止助手执行任务
+    ///
+    /// # Returns
+    /// * `Ok(())` - 停止成功
+    /// * `Err(Error::StopFailed)` - 停止失败
     pub fn stop(&mut self) -> Result<(), Error> {
         unsafe {
             if raw::AsstStop(self.handle.as_ptr()) != 0 {
@@ -203,6 +270,15 @@ impl Assistant {
         }
     }
 
+    /// 在指定坐标执行点击操作
+    ///
+    /// # Arguments
+    /// * `x` - 点击的X坐标
+    /// * `y` - 点击的Y坐标
+    ///
+    /// # Returns
+    /// * `Ok(())` - 点击成功
+    /// * `Err(Error::ClickFailed)` - 点击失败
     pub fn click(&mut self, x: i32, y: i32) -> Result<(), Error> {
         unsafe {
             if raw::AsstAsyncClick(self.handle.as_ptr(), x, y, 1) != 0 {
@@ -213,6 +289,11 @@ impl Assistant {
         }
     }
 
+    /// 捕获当前屏幕截图
+    ///
+    /// # Returns
+    /// * `Ok(())` - 截图成功
+    /// * `Err(Error::CaptureFailed)` - 截图失败
     pub fn capture_screenshot(&mut self) -> Result<(), Error> {
         unsafe {
             if raw::AsstAsyncScreencap(self.handle.as_ptr(), 1) != 0 {
@@ -223,7 +304,11 @@ impl Assistant {
         }
     }
 
-    /// 返回主页
+    /// 返回游戏主页
+    ///
+    /// # Returns
+    /// * `Ok(())` - 返回成功
+    /// * `Err(Error::BackToHomeFailed)` - 返回失败
     pub fn back_to_home(&mut self) -> Result<(), Error> {
         unsafe {
             if raw::AsstBackToHome(self.handle.as_ptr()) != 0 {
@@ -234,10 +319,16 @@ impl Assistant {
         }
     }
 
+    /// 获取空值的大小
     pub fn get_null_size() -> u64 {
         unsafe { raw::AsstGetNullSize() }
     }
 
+    /// 获取当前实例的UUID
+    ///
+    /// # Returns
+    /// * `Ok(String)` - UUID字符串
+    /// * `Err(Error::Unknown)` - 获取失败
     pub fn get_uuid(&self) -> Result<String, Error> {
         unsafe {
             let mut buff_size = 1024;
@@ -263,6 +354,11 @@ impl Assistant {
         }
     }
 
+    /// 获取当前所有任务的列表
+    ///
+    /// # Returns
+    /// * `Ok(Vec<&dyn task::Task>)` - 任务列表
+    /// * `Err(Box<dyn std::error::Error>)` - 获取失败
     pub fn get_tasks_list(&self) -> Result<Vec<&dyn task::Task>, Box<dyn std::error::Error>> {
         let mut list: Vec<i32> = Vec::with_capacity(1000);
         unsafe {
@@ -281,24 +377,40 @@ impl Assistant {
         }
     }
 
-    /// 检查是否正在运行
+    /// 检查助手是否正在运行
+    ///
+    /// # Returns
+    /// * `true` - 正在运行
+    /// * `false` - 未运行
     pub fn is_running(&self) -> bool {
         unsafe { raw::AsstRunning(self.handle.as_ptr()) != 0 }
     }
 
-    /// 检查是否已连接
+    /// 检查是否已连接到设备
+    ///
+    /// # Returns
+    /// * `true` - 已连接
+    /// * `false` - 未连接
     pub fn is_connected(&self) -> bool {
         unsafe { raw::AsstConnected(self.handle.as_ptr()) != 0 }
     }
 
-    /// 打印日志
+    /// 打印日志信息
+    ///
+    /// # Arguments
+    /// * `level` - 日志级别
+    /// * `message` - 日志消息
     pub fn log(level: &str, message: &str) {
         let level_cstr = CString::new(level).unwrap();
         let message_cstr = CString::new(message).unwrap();
         unsafe { raw::AsstLog(level_cstr.as_ptr(), message_cstr.as_ptr()) }
     }
 
-    /// 获取版本信息
+    /// 获取MAA助手的版本信息
+    ///
+    /// # Returns
+    /// * `Ok(String)` - 版本号
+    /// * `Err(Error::Unknown)` - 获取失败
     pub fn version() -> Result<String, Error> {
         unsafe {
             CStr::from_ptr(raw::AsstGetVersion())
@@ -309,6 +421,7 @@ impl Assistant {
     }
 }
 
+/// 实现Drop trait，确保资源正确释放
 impl Drop for Assistant {
     fn drop(&mut self) {
         unsafe {
@@ -317,6 +430,6 @@ impl Drop for Assistant {
     }
 }
 
-// 确保Assistant可以安全地在线程间传递
+/// 确保Assistant可以安全地在线程间传递
 unsafe impl Send for Assistant {}
 unsafe impl Sync for Assistant {}
