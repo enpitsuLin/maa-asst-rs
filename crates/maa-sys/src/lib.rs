@@ -4,6 +4,7 @@ pub mod task;
 
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
+use std::path::Path;
 use std::ptr::NonNull;
 use std::sync::Once;
 use thiserror::Error;
@@ -64,9 +65,6 @@ pub enum InstanceOptionKey {
     KillAdbOnExit = 5,
 }
 
-/// 回调函数类型
-pub type CallbackFn = Box<dyn Fn(i32, String) + Send + 'static>;
-
 /// MAA助手的主要结构体
 pub struct Assistant {
     handle: NonNull<raw::AsstExtAPI>,
@@ -89,9 +87,9 @@ pub unsafe extern "C" fn callback_wrapper(
 }
 
 impl Assistant {
-    /// 初始化MAA资源
-    fn init_resources(resource_dir: &str) -> Result<(), Error> {
-        let resource_path = CString::new(resource_dir).unwrap();
+    fn load_resource<P: AsRef<Path>>(path: P) -> Result<(), Error> {
+        let path = path.as_ref();
+        let resource_path = CString::new(path.to_string_lossy().as_ref()).unwrap();
         unsafe {
             if raw::AsstLoadResource(resource_path.as_ptr()) != 0 {
                 Ok(())
@@ -135,8 +133,8 @@ impl Assistant {
     /// # Returns
     /// * `Ok(Assistant)` - 创建成功
     /// * `Err(Error)` - 创建失败，可能是资源加载失败或实例创建失败
-    pub fn new(resource_dir: &str) -> Result<Self, Error> {
-        INIT.call_once(|| Self::init_resources(resource_dir).unwrap());
+    pub fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
+        INIT.call_once(|| Self::load_resource(path).unwrap());
 
         let handle = unsafe { raw::AsstCreate() };
         NonNull::new(handle)
@@ -153,12 +151,11 @@ impl Assistant {
     /// # Arguments
     /// * `resource_dir` - 资源文件夹的路径
     /// * `callback` - 回调函数，接收消息ID和JSON详情
-
-    pub fn new_with_callback(
-        resource_dir: &str,
+    pub fn new_with_callback<P: AsRef<Path>>(
+        path: P,
         callback: impl FnMut(message::AsstMsg, serde_json::Value) + Send + 'static,
     ) -> Result<Self, Error> {
-        INIT.call_once(|| Self::init_resources(resource_dir).unwrap());
+        INIT.call_once(|| Self::load_resource(path).unwrap());
 
         let processor = message::Processor::from(callback);
 
