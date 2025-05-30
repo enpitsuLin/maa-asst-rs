@@ -75,6 +75,19 @@ pub struct Assistant {
     tasks: HashMap<i32, Box<dyn task::Task>>,
 }
 
+/// 将 Rust 的回调函数转换为 C 的回调函数
+pub unsafe extern "C" fn callback_wrapper(
+    msg_id: i32,
+    details_json: *const ::std::os::raw::c_char,
+    user_data: *mut ::std::os::raw::c_void,
+) {
+    let json_str = std::ffi::CStr::from_ptr(details_json).to_str().unwrap();
+    let details: serde_json::Value = serde_json::from_str(json_str).unwrap();
+    let processor = &mut *(user_data as *mut message::Processor);
+    let asst_msg = message::AsstMsg::from(msg_id);
+    (processor.callback)(asst_msg, details);
+}
+
 impl Assistant {
     /// 初始化MAA资源
     fn init_resources(resource_dir: &str) -> Result<(), Error> {
@@ -151,19 +164,7 @@ impl Assistant {
 
         let processor_ptr = Box::into_raw(Box::new(processor));
 
-        pub unsafe extern "C" fn raw_callback(
-            msg_id: i32,
-            details_json: *const ::std::os::raw::c_char,
-            user_data: *mut ::std::os::raw::c_void,
-        ) {
-            let json_str = std::ffi::CStr::from_ptr(details_json).to_str().unwrap();
-            let details: serde_json::Value = serde_json::from_str(json_str).unwrap();
-            let processor = &mut *(user_data as *mut message::Processor);
-            let asst_msg = message::AsstMsg::from(msg_id);
-            (processor.callback)(asst_msg, details);
-        }
-
-        let handle = unsafe { raw::AsstCreateEx(Some(raw_callback), processor_ptr as *mut _) };
+        let handle = unsafe { raw::AsstCreateEx(Some(callback_wrapper), processor_ptr as *mut _) };
         NonNull::new(handle)
             .map(|handle| Self {
                 handle,
@@ -413,21 +414,37 @@ mod tests {
 
     #[test]
     fn test_connect_device() {
-        println!("开始测试连接设备...");
+        let mut assistant = Assistant::new_with_callback(env!("MAA_RESOURCE_PATH"), |msg_id, details| {
+            let details_json = details.as_object().unwrap();
+            println!("收到回调: msg_id={:?}\n details={:?}", msg_id, details_json);
+        })
+        .unwrap();
 
-        println!("创建 Assistant 实例...");
-        // 创建 Assistant 实例
-        let callback = |msg_id: message::AsstMsg, details: serde_json::Value| {
-            let details_json = details.to_string();
-            println!("收到回调: msg_id={}, details={:?}", msg_id, details_json);
-        };
+        assistant
+            .set_instance_option(InstanceOptionKey::TouchMode, "adb")
+            .unwrap();
+        assistant.connect("adb", "192.168.20.29:33767", None).unwrap();
 
-        let mut assistant = Assistant::new_with_callback(env!("MAA_RESOURCE_PATH"), callback).unwrap();
+        if !assistant.is_connected() {
+            println!("connect failed");
+            return;
+        }
 
-        assistant.connect("adb", "192.168.20.29:45147", None).unwrap();
+        assistant
+            .append_task(
+                task::StartUpTask::builder()
+                    .enable(true)
+                    .client_type("Official")
+                    .start_game_enabled(true)
+                    .build(),
+            )
+            .unwrap();
 
-        println!("按任意键继续...");
-        let mut input = String::new();
-        std::io::stdin().read_line(&mut input).unwrap();
+        assistant.start().unwrap();
+
+        println!("should be running");
+        std::thread::sleep(std::time::Duration::from_secs(60)); // 等待60秒
+
+        assistant.stop().unwrap();
     }
 }
