@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use tracing::{info, Level};
 use tracing_subscriber::{filter::Targets, fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 

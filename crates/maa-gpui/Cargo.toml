@@ -7,6 +7,7 @@ description = "基于 GPUI 的明日方舟 MMA 助手的 GUI"
 readme = "README.md"
 edition = "2021"
 rust-version = "1.87.0"
+build = "build.rs"
 
 [dependencies]
 gpui = { git = "https://github.com/huacnlee/zed.git", branch = "webview" }
@@ -25,11 +26,26 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 directories = "6.0.0"
 rust-embed = "8.7.2"
 
-[package.metadata.bundle]
+[build-dependencies]
+embed-resource = "3.0"
+
+[[bin]]
 name = "MAA"
+path = "src/main.rs"
+
+[package.metadata.packager]
+before-packaging-command = "cargo build --release"
+product-name = "MAA"
 identifier = "me.enpitsulin.maa-gpui"
-icon = ["res/icon-32x32.png", "res/icon-64x64.png"]
 resources = []
+icons = [
+  "res/icon-64x64.png",
+  "res/icon-128x128.png",
+  "res/icon-256x256.png",
+  "res/icon.ico",
+]
 copyright = "Copyright (c) enpitsulin 2025. All rights reserved."
-category = "Utility"
-short_description = "基于 GPUI 的明日方舟 MMA 助手的 GUI"
+description = "基于 GPUI 的明日方舟 MMA 助手的 GUI"
+
+[package.metadata.packager.nsis]
+appdata-paths = ["$LOCALAPPDATA/$IDENTIFIER"]
