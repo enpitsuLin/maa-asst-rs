@@ -2,7 +2,7 @@ use gpui::{
     div, App, AppContext, BorrowAppContext, Context, Entity, IntoElement, ParentElement, Render, Styled,
     Window,
 };
-use gpui_component::{button::Button, v_flex, white};
+use gpui_component::{button::Button, v_flex, white, ContextModal};
 
 use crate::settings::Settings;
 
@@ -16,10 +16,26 @@ impl TestView {
     pub fn new(_window: &mut Window, _cx: &mut App) -> Self {
         Self {}
     }
+
+    fn show_modal(&mut self, window: &mut Window, cx: &mut App) {
+        window.open_modal(cx, move |modal, _, _| {
+            modal
+                .title("Test Modal")
+                .child(
+                    v_flex()
+                        .gap_3()
+                        .child("This is a modal dialog.")
+                        .child("You can put anything here."),
+                )
+                .footer(|render_ok, render_cancel, window, cx| {
+                    vec![render_ok(window, cx), render_cancel(window, cx)]
+                })
+        });
+    }
 }
 
 impl Render for TestView {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div().size_full().child(
             v_flex()
                 .size_full()
@@ -28,6 +44,7 @@ impl Render for TestView {
                 .justify_center()
                 .items_center()
                 .text_3xl()
+                .gap_2()
                 .child(format!("Hello, world"))
                 .child(
                     Button::new("test-button")
@@ -38,6 +55,11 @@ impl Render for TestView {
                                 settings.adb_path = Some(String::from("adb"));
                             })
                         }),
+                )
+                .child(
+                    Button::new("test-modal")
+                        .label("Open Modal")
+                        .on_click(cx.listener(|this, _, window, cx| this.show_modal(window, cx))),
                 ),
         )
     }
