@@ -1,4 +1,4 @@
-use gpui::{App, EventEmitter, Global};
+use gpui::{App, BorrowAppContext, EventEmitter, Global};
 use serde::{Deserialize, Serialize};
 use std::{fs::File, path::PathBuf};
 use tracing::warn;
@@ -40,5 +40,33 @@ impl Settings {
             warn!("Failed to parse settings file, using default settings");
             Settings::default()
         }
+    }
+
+    pub fn global(cx: &App) -> &Self {
+        cx.global::<Self>()
+    }
+
+    pub fn global_mut(cx: &mut App) -> &mut Self {
+        cx.global_mut::<Self>()
+    }
+}
+
+pub trait SettingsTrait {
+    fn settings(&self) -> &Settings;
+    fn settings_mut(&mut self) -> &mut Settings;
+    fn update_settings<R>(&mut self, f: impl FnOnce(&mut Settings, &mut App) -> R) -> R;
+}
+
+impl SettingsTrait for App {
+    fn settings(&self) -> &Settings {
+        Settings::global(self)
+    }
+
+    fn settings_mut(&mut self) -> &mut Settings {
+        Settings::global_mut(self)
+    }
+
+    fn update_settings<R>(&mut self, f: impl FnOnce(&mut Settings, &mut App) -> R) -> R {
+        self.update_global::<Settings, R>(f)
     }
 }

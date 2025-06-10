@@ -2,13 +2,20 @@ use std::{fs, sync::Arc};
 
 use directories::ProjectDirs;
 use gpui::{
-    actions, px, size, AnyView, App, AppContext, Application, Bounds, KeyBinding, SharedString, Window, WindowBounds,
+    actions, px, size, AnyView, App, AppContext, Application, Bounds, KeyBinding, Window, WindowBounds,
     WindowKind, WindowOptions,
 };
 use gpui_component::{Root, TitleBar};
 use tracing::{debug, info};
 
-use crate::{assets::Assets, root::MAARoot, settings::Settings};
+use crate::{
+    assets::Assets,
+    root::MAARoot,
+    states::{
+        app::{AppState, AppStateTrait},
+        settings::Settings,
+    },
+};
 
 actions!(maa_actions, [Quit, Hide]);
 
@@ -32,6 +39,7 @@ pub async fn setup() {
     app.run(move |app| {
         gpui_component::init(app);
 
+        AppState::init(app, "MAA");
         Settings::init(app, directory.join("settings.json"));
 
         MAAWindow::shortcut_binding_init(app);
@@ -39,25 +47,25 @@ pub async fn setup() {
         app.activate(true);
         let options = MAAWindow::window_options_init(app);
 
-        MAAWindow::windows_async_init("MAA", options, app, super::views::test::TestView::view);
+        MAAWindow::windows_async_init(options, app, super::views::test::TestView::view);
     });
 }
 
 struct MAAWindow();
 
 impl MAAWindow {
-    fn windows_async_init<F, E>(title: &str, options: WindowOptions, cx: &mut App, crate_view_fn: F)
+    fn windows_async_init<F, E>(options: WindowOptions, cx: &mut App, crate_view_fn: F)
     where
         E: Into<AnyView>,
         F: FnOnce(&mut Window, &mut App) -> E + Send + 'static,
     {
-        let title = SharedString::from(title.to_string());
+        let title = cx.app_title();
 
         cx.spawn(async move |cx| {
             let window = cx
                 .open_window(options, |window, cx| {
                     let view = crate_view_fn(window, cx);
-                    let root = cx.new(|cx| MAARoot::new(title.clone(), view.into(), window, cx));
+                    let root = cx.new(|cx| MAARoot::new(view.into(), window, cx));
 
                     cx.new(|cx| Root::new(root.into(), window, cx))
                 })

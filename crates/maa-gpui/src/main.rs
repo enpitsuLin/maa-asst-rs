@@ -1,7 +1,7 @@
-mod settings;
-mod ui;
-mod root;
 mod assets;
+mod root;
+mod states;
+mod ui;
 
 #[async_std::main]
 async fn main() {

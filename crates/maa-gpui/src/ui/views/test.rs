@@ -1,10 +1,8 @@
-use gpui::{
-    div, App, AppContext, BorrowAppContext, Context, Entity, IntoElement, ParentElement, Render, Styled,
-    Window,
-};
+use gpui::{div, App, AppContext, Context, Entity, IntoElement, ParentElement, Render, Styled, Window};
 use gpui_component::{button::Button, v_flex, white, ContextModal};
+use tracing::info;
 
-use crate::settings::Settings;
+use crate::states::settings::SettingsTrait;
 
 pub struct TestView {}
 
@@ -45,15 +43,20 @@ impl Render for TestView {
                 .items_center()
                 .text_3xl()
                 .gap_2()
+                .child(serde_json::to_string(&cx.settings()).unwrap())
                 .child(format!("Hello, world"))
                 .child(
                     Button::new("test-button")
                         .label("Click me")
                         .on_click(|_, _, app| {
-                            println!("Button clicked");
-                            app.update_global::<Settings, ()>(|settings, _| {
+                            info!("Button clicked");
+                            let settings = app.update_settings(|settings, _| {
                                 settings.adb_path = Some(String::from("adb"));
-                            })
+
+                                serde_json::to_string(settings).unwrap()
+                            });
+
+                            info!("settings: {:?}", settings);
                         }),
                 )
                 .child(

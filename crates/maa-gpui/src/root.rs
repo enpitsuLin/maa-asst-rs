@@ -1,7 +1,4 @@
-use gpui::{
-    div, AnyView, AppContext, Context, Entity, IntoElement, ParentElement, Render, SharedString, Styled,
-    Window,
-};
+use gpui::{div, AnyView, AppContext, Context, Entity, IntoElement, ParentElement, Render, Styled, Window};
 use gpui_component::{v_flex, Root};
 
 use crate::ui::views::title_bar::AppTitleBar;
@@ -12,13 +9,8 @@ pub struct MAARoot {
 }
 
 impl MAARoot {
-    pub fn new(
-        title: impl Into<SharedString>,
-        view: impl Into<AnyView>,
-        window: &mut Window,
-        cx: &mut Context<Self>,
-    ) -> Self {
-        let title_bar = cx.new(|cx| AppTitleBar::new(title, window, cx));
+    pub fn new(view: impl Into<AnyView>, _window: &mut Window, cx: &mut Context<Self>) -> Self {
+        let title_bar = cx.new(|_| AppTitleBar {});
         Self {
             title_bar,
             view: view.into(),

@@ -1,6 +1,5 @@
 use gpui::{
-    div, Context, InteractiveElement, IntoElement, MouseButton, ParentElement, Render, SharedString, Styled,
-    Window,
+    div, Context, InteractiveElement, IntoElement, MouseButton, ParentElement, Render, Styled, Window,
 };
 use gpui_component::{
     badge::Badge,
@@ -8,23 +7,19 @@ use gpui_component::{
     ContextModal, IconName, Sizable, TitleBar,
 };
 
-pub struct AppTitleBar {
-    title: SharedString,
-}
+use crate::states::app::AppStateTrait;
 
-impl AppTitleBar {
-    pub fn new(title: impl Into<SharedString>, _window: &mut Window, _cx: &mut Context<Self>) -> Self {
-        Self { title: title.into() }
-    }
-}
+pub struct AppTitleBar;
 
 impl Render for AppTitleBar {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let notifications_count = window.notifications(cx).len();
 
+        let title = cx.app_title();
+
         TitleBar::new()
             // left side
-            .child(div().flex().items_center().child(self.title.clone()))
+            .child(div().flex().items_center().child(title.clone()))
             .child(
                 div()
                     .flex()
@@ -47,6 +42,13 @@ impl Render for AppTitleBar {
                                 .max(99)
                                 .child(Button::new("bell").small().ghost().compact().icon(IconName::Bell)),
                         ),
+                    )
+                    .child(
+                        Button::new("test")
+                            .label("Test")
+                            .on_click(cx.listener(|_, _, _, cx| {
+                                cx.update_title("test title");
+                            })),
                     ),
             )
     }
