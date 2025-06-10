@@ -37,6 +37,8 @@ pub async fn setup() {
         .with_http_client(http_client);
 
     app.run(move |app| {
+        info!("Starting application");
+
         gpui_component::init(app);
 
         AppState::init(app, "MAA");
@@ -44,13 +46,10 @@ pub async fn setup() {
 
         MAAWindow::shortcut_binding_init(app);
 
-        app.activate(true);
         let options = MAAWindow::window_options_init(app);
 
         MAAWindow::windows_async_init(options, app, crate::ui::components::test::TestView::view);
     });
-
-    info!("Starting application");
 }
 
 struct MAAWindow();
@@ -114,8 +113,8 @@ impl MAAWindow {
             window_bounds: Some(WindowBounds::Windowed(window_bounds)),
             titlebar: Some(TitleBar::title_bar_options()),
             window_min_size: Some(gpui::Size {
-                width: px(640.),
-                height: px(480.),
+                width: px(860.),
+                height: px(640.),
             }),
             kind: WindowKind::Normal,
             #[cfg(target_os = "linux")]
