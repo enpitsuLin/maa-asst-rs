@@ -1,7 +1,6 @@
 mod settings;
 mod ui;
 mod root;
-mod title_bar;
 mod assets;
 
 #[async_std::main]

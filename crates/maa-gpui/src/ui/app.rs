@@ -2,51 +2,13 @@ use std::{fs, sync::Arc};
 
 use directories::ProjectDirs;
 use gpui::{
-    actions, div, px, size, white, AnyView, App, AppContext, Application, BorrowAppContext, Bounds, Context,
-    Entity, IntoElement, KeyBinding, ParentElement, Render, SharedString, Styled, Window, WindowBounds,
+    actions, px, size, AnyView, App, AppContext, Application, Bounds, KeyBinding, SharedString, Window, WindowBounds,
     WindowKind, WindowOptions,
 };
-use gpui_component::{button::Button, v_flex, Root, TitleBar};
+use gpui_component::{Root, TitleBar};
 use tracing::{debug, info};
 
 use crate::{assets::Assets, root::MAARoot, settings::Settings};
-
-struct TestView {}
-
-impl TestView {
-    fn view(window: &mut Window, cx: &mut App) -> Entity<Self> {
-        cx.new(|cx| Self::new(window, cx))
-    }
-
-    pub fn new(_window: &mut Window, _cx: &mut App) -> Self {
-        Self {}
-    }
-}
-
-impl Render for TestView {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        div().size_full().child(
-            v_flex()
-                .size_full()
-                .bg(white())
-                .flex()
-                .justify_center()
-                .items_center()
-                .text_3xl()
-                .child(format!("Hello, world"))
-                .child(
-                    Button::new("test-button")
-                        .label("Click me")
-                        .on_click(|_, _, app| {
-                            println!("Button clicked");
-                            app.update_global::<Settings, ()>(|settings, _| {
-                                settings.adb_path = Some(String::from("adb"));
-                            })
-                        }),
-                ),
-        )
-    }
-}
 
 actions!(maa_actions, [Quit, Hide]);
 
@@ -77,7 +39,7 @@ pub async fn setup() {
         app.activate(true);
         let options = MAAWindow::window_options_init(app);
 
-        MAAWindow::windows_async_init("MAA", options, app, TestView::view);
+        MAAWindow::windows_async_init("MAA", options, app, super::views::test::TestView::view);
     });
 }
 

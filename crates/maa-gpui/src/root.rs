@@ -4,7 +4,7 @@ use gpui::{
 };
 use gpui_component::{v_flex, Root};
 
-use crate::title_bar::AppTitleBar;
+use crate::ui::views::title_bar::AppTitleBar;
 
 pub struct MAARoot {
     title_bar: Entity<AppTitleBar>,
