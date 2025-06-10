@@ -14,7 +14,8 @@ reqwest_client = { git = "https://github.com/huacnlee/zed.git", branch = "webvie
 gpui-component = { git = "https://github.com/longbridge/gpui-component.git" }
 
 ffi = { package = "maa-sys", version = "0.1.0", path = "../maa-sys" }
-async-std = { version = "1", features = ["attributes"] }
+# TODO: 移除多余的 features
+tokio = { version = "1.45.1", features = ["full"] }
 anyhow = "1.0.98"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

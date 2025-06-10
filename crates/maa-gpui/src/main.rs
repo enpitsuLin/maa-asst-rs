@@ -6,7 +6,7 @@ mod root;
 mod states;
 mod ui;
 
-#[async_std::main]
+#[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
         .with(fmt::layer())
