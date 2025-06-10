@@ -10,7 +10,7 @@ pub struct MAARoot {
 
 impl MAARoot {
     pub fn new(view: impl Into<AnyView>, _window: &mut Window, cx: &mut Context<Self>) -> Self {
-        let title_bar = cx.new(|_| AppTitleBar {});
+        let title_bar = cx.new(|_| AppTitleBar::new());
         Self {
             title_bar,
             view: view.into(),

@@ -1,15 +1,32 @@
 use gpui::{
-    div, Context, InteractiveElement, IntoElement, MouseButton, ParentElement, Render, Styled, Window,
+    div, prelude::FluentBuilder, ClickEvent, Context, InteractiveElement, IntoElement, MouseButton,
+    ParentElement, Render, Styled, Window,
 };
 use gpui_component::{
     badge::Badge,
     button::{Button, ButtonVariants},
-    ContextModal, IconName, Sizable, TitleBar,
+    ActiveTheme, ContextModal, IconName, Sizable, Theme, ThemeMode, TitleBar,
 };
 
 use crate::states::app::AppStateTrait;
 
-pub struct AppTitleBar;
+pub struct AppTitleBar {}
+
+impl AppTitleBar {
+    pub fn new() -> Self {
+        Self {}
+    }
+
+    fn change_color_mode(&mut self, _: &ClickEvent, window: &mut Window, cx: &mut Context<Self>) {
+        let mode = match cx.theme().mode.is_dark() {
+            true => ThemeMode::Light,
+            false => ThemeMode::Dark,
+        };
+
+        Theme::change(mode, None, cx);
+        window.refresh();
+    }
+}
 
 impl Render for AppTitleBar {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
@@ -29,6 +46,19 @@ impl Render for AppTitleBar {
                     .gap_2()
                     .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
                     .child(
+                        Button::new("theme-mode")
+                            .map(|this| {
+                                if cx.theme().mode.is_dark() {
+                                    this.icon(IconName::Sun)
+                                } else {
+                                    this.icon(IconName::Moon)
+                                }
+                            })
+                            .small()
+                            .ghost()
+                            .on_click(cx.listener(Self::change_color_mode)),
+                    )
+                    .child(
                         Button::new("github")
                             .icon(IconName::GitHub)
                             .small()
@@ -45,7 +75,9 @@ impl Render for AppTitleBar {
                     )
                     .child(
                         Button::new("test")
-                            .label("Test")
+                            .label("test")
+                            .small()
+                            .ghost()
                             .on_click(cx.listener(|_, _, _, cx| {
                                 cx.update_title("test title");
                             })),
