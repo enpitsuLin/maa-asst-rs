@@ -3,7 +3,7 @@ authors = ['enpitsulin <enpitsulin@gmail.com>']
 description = "N/a"
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/enpitsuLin/maa-asst-rs" 
+repository = "https://github.com/enpitsuLin/maa-asst-rs"
 
 [workspace]
 resolver = "2"
