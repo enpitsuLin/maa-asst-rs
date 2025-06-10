@@ -14,4 +14,12 @@ reqwest_client = { git = "https://github.com/huacnlee/zed.git", branch = "webvie
 gpui-component = { git = "https://github.com/longbridge/gpui-component.git" }
 
 ffi = { package = "maa-sys", version = "0.1.0", path = "../maa-sys" }
+async-std = { version = "1", features = ["attributes"] }
 anyhow = "1.0.98"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+notify = "8.0.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+directories = "6.0.0"
+rust-embed = "8.7.2"
