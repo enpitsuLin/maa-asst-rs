@@ -1,7 +1,7 @@
 use gpui::{div, AnyView, AppContext, Context, Entity, IntoElement, ParentElement, Render, Styled, Window};
 use gpui_component::{v_flex, Root};
 
-use crate::ui::views::title_bar::AppTitleBar;
+use crate::ui::components::title_bar::AppTitleBar;
 
 pub struct MAARoot {
     title_bar: Entity<AppTitleBar>,

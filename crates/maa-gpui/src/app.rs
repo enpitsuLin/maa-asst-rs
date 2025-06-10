@@ -47,7 +47,7 @@ pub async fn setup() {
         app.activate(true);
         let options = MAAWindow::window_options_init(app);
 
-        MAAWindow::windows_async_init(options, app, super::views::test::TestView::view);
+        MAAWindow::windows_async_init(options, app, crate::ui::components::test::TestView::view);
     });
 
     info!("Starting application");

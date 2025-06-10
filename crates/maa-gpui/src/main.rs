@@ -1,6 +1,7 @@
 use tracing::info;
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
+mod app;
 mod assets;
 mod root;
 mod states;
@@ -15,5 +16,5 @@ async fn main() {
 
     info!("Logger initialized");
 
-    crate::ui::app::setup().await;
+    crate::app::setup().await;
 }
