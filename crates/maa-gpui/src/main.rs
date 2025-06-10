@@ -1,3 +1,6 @@
+use tracing::info;
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+
 mod assets;
 mod root;
 mod states;
@@ -5,9 +8,12 @@ mod ui;
 
 #[async_std::main]
 async fn main() {
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::registry()
+        .with(fmt::layer())
+        .with(EnvFilter::from_env("MAA_LOG"))
+        .init();
 
-    tracing::info!("Starting application");
+    info!("Logger initialized");
 
     crate::ui::app::setup().await;
 }

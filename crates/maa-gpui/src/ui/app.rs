@@ -28,7 +28,7 @@ pub async fn setup() {
         fs::create_dir_all(&directory)
             .unwrap_or_else(|e| panic!("couldn't create data directory, {:?}, {:?}", directory, e));
     } else {
-        info!("Data directory located at {:?}", directory);
+        debug!("Data directory located at {:?}", directory);
     }
 
     let http_client = Arc::new(reqwest_client::ReqwestClient::user_agent("maa-gpui").unwrap());
@@ -49,6 +49,8 @@ pub async fn setup() {
 
         MAAWindow::windows_async_init(options, app, super::views::test::TestView::view);
     });
+
+    info!("Starting application");
 }
 
 struct MAAWindow();
