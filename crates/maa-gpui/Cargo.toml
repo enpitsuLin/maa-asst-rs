@@ -49,3 +49,6 @@ description = "基于 GPUI 的明日方舟 MMA 助手的 GUI"
 
 [package.metadata.packager.nsis]
 appdata-paths = ["$LOCALAPPDATA/$IDENTIFIER"]
+template = "res/windows/installer.nsi"
+languages = ["English", "SimpChinese"]
+display-language-selector = true
