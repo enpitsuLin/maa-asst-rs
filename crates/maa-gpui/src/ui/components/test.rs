@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use hashbrown::HashMap;
 
 use gpui::{
     div, impl_internal_actions, prelude::FluentBuilder, relative, App, AppContext, ClickEvent, Context,

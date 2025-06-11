@@ -25,6 +25,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 directories = "6.0.0"
 rust-embed = "8.7.2"
+hashbrown = { version = "0.15.4", features = ["serde"] }
 
 [build-dependencies]
 embed-resource = "3.0"

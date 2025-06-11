@@ -3,7 +3,7 @@ mod raw;
 pub mod task;
 mod types;
 
-use std::collections::HashMap;
+use hashbrown::HashMap;
 use std::ffi::{CStr, CString};
 use std::path::Path;
 use std::ptr::NonNull;
