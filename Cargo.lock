@@ -2526,7 +2526,7 @@ dependencies = [
 [[package]]
 name = "gpui-component"
 version = "0.1.0"
-source = "git+https://github.com/enpitsuLin/gpui-component.git?branch=fix%2Funiform-list-break#faedbc25113987f107f750a197c53c0598294e2d"
+source = "git+https://github.com/longbridge/gpui-component.git#1214798abd2728fbf94f1d84a77c32e55ea416dc"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2591,7 +2591,7 @@ dependencies = [
 [[package]]
 name = "gpui-component-macros"
 version = "0.1.0"
-source = "git+https://github.com/enpitsuLin/gpui-component.git?branch=fix%2Funiform-list-break#faedbc25113987f107f750a197c53c0598294e2d"
+source = "git+https://github.com/longbridge/gpui-component.git#1214798abd2728fbf94f1d84a77c32e55ea416dc"
 dependencies = [
  "proc-macro2",
  "quote",
