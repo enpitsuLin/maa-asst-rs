@@ -12,7 +12,7 @@ build = "build.rs"
 [dependencies]
 gpui = { git = "https://github.com/zed-industries/zed.git" }
 reqwest_client = { git = "https://github.com/zed-industries/zed.git" }
-gpui-component = { git = "https://github.com/longbridge/gpui-component.git" }
+gpui-component = { git = "https://github.com/enpitsuLin/gpui-component.git", branch = "fix/uniform-list-break" }
 
 ffi = { package = "maa-sys", version = "0.1.0", path = "../maa-sys" }
 # TODO: 移除多余的 features
