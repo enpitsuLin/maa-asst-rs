@@ -11,7 +11,7 @@ mod ui;
 
 #[tokio::main]
 async fn main() {
-    let targets_filter = Targets::new().with_targets(vec![("maa_gpui", Level::DEBUG)]);
+    let targets_filter = Targets::new().with_targets(vec![("MAA", Level::DEBUG)]);
 
     let global_env_filter = EnvFilter::try_from_env("MAA_LOG").unwrap_or_else(|_| {
         #[cfg(debug_assertions)]
