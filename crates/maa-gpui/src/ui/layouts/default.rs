@@ -11,6 +11,7 @@ use gpui_router::{use_location, use_navigate, IntoLayout, Outlet};
 use serde::Deserialize;
 
 use crate::states::app::AppStateTrait;
+use crate::ui::components::icon::MAAIcons;
 
 #[derive(Clone, PartialEq, Eq, Deserialize)]
 pub struct SelectCompany(SharedString);
@@ -99,20 +100,20 @@ impl DefaultLayout {
                 SidebarGroup::new("开始").child(
                     SidebarMenu::new().children([
                         SidebarMenuItem::new("首页")
-                            .icon(IconName::SquareTerminal)
+                            .icon(MAAIcons::Home)
                             .active(path == "/")
                             .on_click(|_e, _window, cx| {
                                 Self::navigate(cx, "/");
                             }),
                         SidebarMenuItem::new("一键长草")
-                            .icon(IconName::SquareTerminal)
+                            .icon(MAAIcons::Terminal)
                             .active(path == "/start")
                             .on_click(|_e, _window, cx| {
                                 Self::navigate(cx, "/start");
                             }),
                         SidebarMenuItem::new("自动战斗")
                             .active(path == "/copilot")
-                            .icon(IconName::Bot)
+                            .icon(MAAIcons::Bot)
                             .on_click(|_e, _window, cx| {
                                 Self::navigate(cx, "/copilot");
                             }),
@@ -123,7 +124,7 @@ impl DefaultLayout {
                 SidebarGroup::new("平台").child(
                     SidebarMenu::new().children([
                         SidebarMenuItem::new("小工具")
-                            .icon(IconName::BookOpen)
+                            .icon(MAAIcons::Tools)
                             .active(path.starts_with("/tools"))
                             .children(vec![
                                 SidebarMenuItem::new("公招识别")
@@ -162,7 +163,7 @@ impl DefaultLayout {
                             }),
                         SidebarMenuItem::new("设置")
                             .active(path == "/settings")
-                            .icon(IconName::Settings2)
+                            .icon(MAAIcons::Settings)
                             .on_click(|_e, _window, cx| {
                                 Self::navigate(cx, "/settings");
                             }),

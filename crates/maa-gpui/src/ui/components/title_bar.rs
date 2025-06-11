@@ -8,7 +8,7 @@ use gpui_component::{
     ActiveTheme, ContextModal, IconName, Sizable, Theme, ThemeMode, TitleBar,
 };
 
-use crate::states::app::AppStateTrait;
+use crate::{states::app::AppStateTrait, ui::components::icon::MAAIcons};
 
 pub struct AppTitleBar {}
 
@@ -67,10 +67,13 @@ impl Render for AppTitleBar {
                     )
                     .child(
                         div().relative().child(
-                            Badge::new()
-                                .count(notifications_count)
-                                .max(99)
-                                .child(Button::new("bell").small().ghost().compact().icon(IconName::Bell)),
+                            Badge::new().count(notifications_count).max(99).child(
+                                Button::new("bell")
+                                    .small()
+                                    .ghost()
+                                    .compact()
+                                    .icon(MAAIcons::Bell),
+                            ),
                         ),
                     )
                     .child(
