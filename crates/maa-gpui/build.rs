@@ -12,7 +12,7 @@ fn main() {
     match target.as_deref() {
         Ok("macos") => {
             #[cfg(target_os = "macos")]
-            todo!("macos bundle")
+            println!("cargo:warning=macos bundle todo")
         },
         #[cfg(target_os = "windows")]
         Ok("windows") => {
