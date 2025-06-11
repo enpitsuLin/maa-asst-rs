@@ -1,11 +1,10 @@
-use std::{fs, sync::Arc};
-
 use directories::ProjectDirs;
 use gpui::{
     actions, px, size, AnyView, App, AppContext, Application, Bounds, KeyBinding, Window, WindowBounds,
     WindowKind, WindowOptions,
 };
 use gpui_component::{Root, TitleBar};
+use std::{fs, sync::Arc};
 use tracing::{debug, info};
 
 use crate::{
@@ -39,6 +38,7 @@ pub async fn setup() {
     app.run(move |app| {
         info!("Starting application");
 
+        gpui_router::init(app);
         gpui_component::init(app);
 
         AppState::init(app, "MAA");
@@ -46,9 +46,20 @@ pub async fn setup() {
 
         MAAWindow::shortcut_binding_init(app);
 
+        app.on_window_closed(|cx| {
+            if cx.windows().is_empty() {
+                cx.quit();
+            }
+        })
+        .detach();
+
         let options = MAAWindow::window_options_init(app);
 
-        MAAWindow::windows_async_init(options, app, crate::ui::components::test::TestView::view);
+        MAAWindow::windows_async_init(
+            options,
+            app,
+            crate::ui::components::router_test::RouterTestView::view,
+        );
     });
 }
 

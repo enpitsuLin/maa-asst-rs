@@ -47,7 +47,7 @@ enum SubItem {
     Recruitment,
     /// 干员扫描
     OperatorsScan,
-    /// 仓库识别
+    /// 仓库扫描
     DepotScan,
     /// 视频识别
     CopilotByVideo,
