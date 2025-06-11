@@ -10,8 +10,8 @@ rust-version = "1.87.0"
 build = "build.rs"
 
 [dependencies]
-gpui = { git = "https://github.com/huacnlee/zed.git", branch = "webview" }
-reqwest_client = { git = "https://github.com/huacnlee/zed.git", branch = "webview" }
+gpui = { git = "https://github.com/zed-industries/zed.git" }
+reqwest_client = { git = "https://github.com/zed-industries/zed.git" }
 gpui-component = { git = "https://github.com/longbridge/gpui-component.git" }
 
 ffi = { package = "maa-sys", version = "0.1.0", path = "../maa-sys" }
@@ -26,7 +26,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 directories = "6.0.0"
 rust-embed = "8.7.2"
 hashbrown = { version = "0.15.4", features = ["serde"] }
-gpui-router = { git = "https://github.com/enpitsuLin/gpui-router.git", version = "0.1.1" }
+gpui-router = { git = "https://github.com/justjavac/gpui-router.git", version = "0.1.1" }
 
 [build-dependencies]
 embed-resource = "3.0"
