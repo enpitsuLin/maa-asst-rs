@@ -7,8 +7,11 @@ use serde_with::skip_serializing_none;
 
 pub trait Task {
     fn task_type(&self) -> &'static str;
+    fn task_name(&self) -> &'static str;
     fn to_json(&self) -> String;
-    fn from_json(json: &str) -> Result<Self, serde_json::Error> where Self: Sized;
+    fn from_json(json: &str) -> Result<Self, serde_json::Error>
+    where
+        Self: Sized;
 }
 
 /// 开始唤醒任务的参数
@@ -40,6 +43,7 @@ pub trait Task {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "开始唤醒", task_type = "StartUp")]
 pub struct StartUpTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
@@ -54,7 +58,7 @@ pub struct StartUpTask {
     /// 是否自动启动客户端，默认为 `false`
     pub start_game_enabled: Option<bool>,
     /// 切换账号，仅支持切换至已登录的账号
-    /// 
+    ///
     /// 使用登录名进行查找，保证输入内容在所有已登录账号唯一即可：
     /// - 官服：123****4567，可输入 123****4567、4567、123、3****4567
     /// - B服：张三，可输入 张三、张、三
@@ -80,11 +84,12 @@ pub struct StartUpTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "关闭游戏", task_type = "CloseDown")]
 pub struct CloseDownTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
     /// 客户端版本，必选，填空则不执行
-    /// 
+    ///
     /// 可选值：
     /// - "Official" - 官服
     /// - "Bilibili" - B服
@@ -132,6 +137,7 @@ pub struct CloseDownTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "刷理智", task_type = "Fight")]
 pub struct FightTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
@@ -196,6 +202,7 @@ pub struct FightTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "公开招募", task_type = "Recruit")]
 pub struct RecruitTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
@@ -267,11 +274,12 @@ pub struct RecruitTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "基建换班", task_type = "Infrast")]
 pub struct InfrastTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
     /// 换班工作模式，默认为 `0`
-    /// 
+    ///
     /// 可选值：
     /// - `0` - Default: 默认换班模式，单设施最优解
     /// - `10000` - Custom: 自定义换班模式，读取用户配置
@@ -322,6 +330,7 @@ pub struct InfrastTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "商店", task_type = "Mall")]
 pub struct MallTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
@@ -364,6 +373,7 @@ pub struct MallTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "奖励领取", task_type = "Award")]
 pub struct AwardTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
@@ -433,6 +443,7 @@ pub struct AwardTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "肉鸽", task_type = "Roguelike")]
 pub struct RoguelikeTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
@@ -523,6 +534,7 @@ pub struct RoguelikeTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "自动抄作业", task_type = "Copilot")]
 pub struct CopilotTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
@@ -553,6 +565,7 @@ pub struct CopilotTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "自动抄保全作业", task_type = "SSSCopilot")]
 pub struct SSSCopilotTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
@@ -579,6 +592,7 @@ pub struct SSSCopilotTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "仓库识别", task_type = "Depot")]
 pub struct DepotTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
@@ -601,6 +615,7 @@ pub struct DepotTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "干员 box 识别", task_type = "OperBox")]
 pub struct OperBoxTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
@@ -637,17 +652,18 @@ pub struct OperBoxTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "生息演算", task_type = "Reclamation")]
 pub struct ReclamationTask {
     /// 是否启用本任务，默认为 `true`
     pub enable: Option<bool>,
     /// 主题，默认为 "Fire"
-    /// 
+    ///
     /// 可选值：
     /// - "Fire" - *沙中之火*
     /// - "Tales" - *沙洲遗闻*
     pub theme: Option<String>,
     /// 模式，默认为 `0`
-    /// 
+    ///
     /// 可选值：
     /// - `0` - 刷分与建造点，进入战斗直接退出
     /// - `1` - 沙中之火：刷赤金，联络员买水后基地锻造；
@@ -656,7 +672,7 @@ pub struct ReclamationTask {
     /// 自动制造的物品列表，默认为 `["荧光棒"]`
     pub tools_to_craft: Option<Vec<String>>,
     /// 点击类型，默认为 `0`
-    /// 
+    ///
     /// 可选值：
     /// - `0` - 连点
     /// - `1` - 长按
@@ -685,6 +701,7 @@ pub struct ReclamationTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "自定义", task_type = "Custom")]
 pub struct CustomTask {
     /// 是否启用本任务，必选
     pub enable: bool,
@@ -724,13 +741,14 @@ pub struct CustomTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "单步", task_type = "SingleStep")]
 pub struct SingleStepTask {
     /// 是否启用本任务，必选
     pub enable: bool,
     /// 任务类型，目前仅支持 "copilot"
     pub task_type: String,
     /// 子任务类型，必选
-    /// 
+    ///
     /// 可选值：
     /// - "stage" 设置关卡名，需要 "details": { "stage": "xxxx" }
     /// - "start" 开始作战，无 details
@@ -759,6 +777,7 @@ pub struct SingleStepTask {
 /// ```
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[task(name = "视频识别", task_type = "VideoRecognition")]
 pub struct VideoRecognitionTask {
     /// 是否启用本任务，必选
     pub enable: bool,
@@ -837,5 +856,10 @@ mod tests {
         assert_eq!(Some(true), task.enable, "task.enable");
         assert_eq!(vec![1, 2, 3], task.select, "task.select");
         assert_eq!(vec![4, 5, 6], task.confirm, "task.confirm");
+    }
+
+    #[test]
+    fn test_task_name() {
+        assert_eq!("开始唤醒", StartUpTask::builder().build().task_name());
     }
 }

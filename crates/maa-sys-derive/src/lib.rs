@@ -1,13 +1,60 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, Attribute, Data, DeriveInput, Fields, Type};
+use syn::{parse_macro_input, Attribute, Data, DeriveInput, Error, Fields, Type};
 
 /// 为结构体自动实现 Task trait 和 Builder 模式
-#[proc_macro_derive(Task, attributes(task_type))]
+#[proc_macro_derive(Task, attributes(task))]
 pub fn derive_maa_task(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
     let builder_name = format_ident!("{}Builder", name);
+
+    // 获取 task 属性
+    let task_attr = input
+        .attrs
+        .iter()
+        .find(|attr| attr.path().is_ident("task"))
+        .expect("必须提供 #[task(name = \"...\", task_type = \"...\")] 属性");
+
+    let task_meta = task_attr.meta.require_list().expect("task 属性必须是一个列表");
+
+    let mut task_name = None;
+    let mut task_type = None;
+
+    for nested in task_meta
+        .parse_args_with(syn::punctuated::Punctuated::<syn::Meta, syn::Token![,]>::parse_terminated)
+        .expect("task 属性格式错误")
+    {
+        match nested {
+            syn::Meta::NameValue(nv) => {
+                if nv.path.is_ident("name") {
+                    if let syn::Expr::Lit(syn::ExprLit {
+                        lit: syn::Lit::Str(lit),
+                        ..
+                    }) = &nv.value
+                    {
+                        task_name = Some(lit.value());
+                    }
+                } else if nv.path.is_ident("task_type") {
+                    if let syn::Expr::Lit(syn::ExprLit {
+                        lit: syn::Lit::Str(lit),
+                        ..
+                    }) = &nv.value
+                    {
+                        task_type = Some(lit.value());
+                    }
+                }
+            },
+            _ => {
+                return Error::new_spanned(nested, "task 属性只支持 name 和 type 参数")
+                    .to_compile_error()
+                    .into()
+            },
+        }
+    }
+
+    let task_name = task_name.expect("必须提供 task name");
+    let task_type = task_type.expect("必须提供 task type");
 
     // 获取结构体的字段
     let fields = match &input.data {
@@ -95,13 +142,14 @@ pub fn derive_maa_task(input: TokenStream) -> TokenStream {
         }
     });
 
-    // 获取任务类型
-    let task_type = name.to_string().replace("Task", "");
-
     let expanded = quote! {
         impl Task for #name {
             fn task_type(&self) -> &'static str {
                 #task_type
+            }
+
+            fn task_name(&self) -> &'static str {
+                #task_name
             }
 
             fn to_json(&self) -> String {
