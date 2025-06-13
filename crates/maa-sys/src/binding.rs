@@ -8,7 +8,7 @@ include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 #[cfg(test)]
 mod tests {
-    use crate::raw::MaaCore;
+    use crate::binding::MaaCore;
     use std::{ffi::CStr, path::Path};
 
     fn get_test_lib() -> MaaCore {

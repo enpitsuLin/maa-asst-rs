@@ -8,14 +8,24 @@
 
 ## 使用
 
+> [!NOTE]
+> 目前仍在开发中，使用时注意风险。
+
 
 ```toml
 [dependencies]
 maa-sys = { git = "https://github.com/enpitsuLin/maa-asst-rs.git" }
 ```
 
-> [!NOTE]
-> 目前仍在开发中，使用时注意风险。
+### 创建 MAA 助手实例
+
+```rust
+use maa_sys::Assistant;
+
+/// 使用环境变量 `MAA_RESOURCE_PATH` 指向 MAA 助手资源目录, 资源目录应该包括 `/resource` 目录和对应的运行库文件
+let assistant = Assistant::new(env!("MAA_RESOURCE_PATH")).unwrap();
+```
+
 
 ## 构建 
 
