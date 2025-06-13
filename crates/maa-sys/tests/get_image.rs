@@ -1,4 +1,4 @@
-use maa_sys::InstanceOptionKey;
+use maa_sys::{Connection, InstanceOptionKey};
 
 mod common;
 
@@ -10,7 +10,9 @@ fn test_get_image() {
         .set_instance_option(InstanceOptionKey::TouchMode, "adb")
         .unwrap();
 
-    assistant.connect("adb", "192.168.20.29:44847", None).unwrap();
+    assistant
+        .connect(Connection::adb("adb", "192.168.20.29:44847"), None)
+        .unwrap();
 
     assistant.capture_screenshot().unwrap();
 

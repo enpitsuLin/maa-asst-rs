@@ -1,4 +1,4 @@
-use crate::types::*;
+use crate::{types::*, Connection};
 use hashbrown::HashMap;
 use std::env::consts::OS;
 use std::ffi::{CStr, CString};
@@ -106,7 +106,8 @@ impl Assistant {
     ) -> Result<(), Error> {
         let value_str = CString::new(value.into()).unwrap();
         let ret = unsafe {
-            self.core.AsstSetInstanceOption(self.handle.as_ptr(), key as i32, value_str.as_ptr())
+            self.core
+                .AsstSetInstanceOption(self.handle.as_ptr(), key as i32, value_str.as_ptr())
         };
         if ret != 0 {
             Ok(())
@@ -204,9 +205,9 @@ impl Assistant {
     /// # Returns
     /// * `Ok(())` - 连接成功
     /// * `Err(Error::ConnectFailed)` - 连接失败
-    pub fn connect(&mut self, adb_path: &str, address: &str, config: Option<&str>) -> Result<(), Error> {
-        let adb_path = CString::new(adb_path).unwrap();
-        let address_cstr = CString::new(address).unwrap();
+    pub fn connect(&mut self, connection: Connection, config: Option<&str>) -> Result<(), Error> {
+        let adb_path = CString::new(connection.adb_path().unwrap()).unwrap();
+        let address_cstr = CString::new(connection.address().unwrap()).unwrap();
         let config_str = config.map(|c| CString::new(c).unwrap());
 
         let ret = unsafe {
@@ -219,7 +220,7 @@ impl Assistant {
             )
         };
         if ret != 0 {
-            self.target = Some(address.to_string());
+            self.target = connection.address();
             Ok(())
         } else {
             Err(Error::ConnectFailed)
@@ -264,7 +265,9 @@ impl Assistant {
     pub fn set_task_params<T: task::Task + 'static>(&mut self, task_id: i32, task: T) -> Result<(), Error> {
         let params_str = CString::new(task.to_json()).unwrap();
         unsafe {
-            let ret = self.core.AsstSetTaskParams(self.handle.as_ptr(), task_id, params_str.as_ptr());
+            let ret = self
+                .core
+                .AsstSetTaskParams(self.handle.as_ptr(), task_id, params_str.as_ptr());
             if ret != 0 {
                 if let Some(old_task) = self.tasks.get_mut(&task_id) {
                     *old_task = Box::new(task);

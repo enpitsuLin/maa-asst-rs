@@ -1,5 +1,5 @@
 use maa_sys::task::{FightTask, StartUpTask};
-use maa_sys::{Assistant, InstanceOptionKey};
+use maa_sys::{Assistant, Connection, InstanceOptionKey};
 use std::env;
 
 fn pause() {
@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 未 Root 的设备使用 adb 模式
     assistant.set_instance_option(InstanceOptionKey::TouchMode, "adb")?;
-    assistant.connect("adb", "192.168.20.29:40351", None)?;
+    assistant.connect(Connection::adb("adb", "192.168.20.29:40351"), None)?;
 
     if !assistant.is_connected() {
         println!("connect failed");

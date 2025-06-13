@@ -1,4 +1,4 @@
-use maa_sys::{task, Assistant, InstanceOptionKey};
+use maa_sys::{task, Assistant, Connection, InstanceOptionKey};
 
 #[test]
 fn test_version() {
@@ -49,7 +49,9 @@ fn test_connect_device() {
     assistant
         .set_instance_option(InstanceOptionKey::TouchMode, "adb")
         .unwrap();
-    assistant.connect("adb", "192.168.20.29:44847", None).unwrap();
+    assistant
+        .connect(Connection::adb("adb", "192.168.20.29:44847"), None)
+        .unwrap();
 
     if !assistant.is_connected() {
         println!("connect failed");
