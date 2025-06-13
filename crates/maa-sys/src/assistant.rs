@@ -45,8 +45,8 @@ pub unsafe extern "C" fn callback_wrapper(
     let json_str = std::ffi::CStr::from_ptr(details_json).to_str().unwrap();
     let details: serde_json::Value = serde_json::from_str(json_str).unwrap();
     let processor = &mut *(user_data as *mut message::Processor);
-    let asst_msg = message::AsstMsg::from(msg_id);
-    (processor.callback)(asst_msg, details);
+    let msg = message::Message::from(msg_id);
+    (processor.callback)(msg, details);
 }
 
 impl Assistant {
@@ -185,7 +185,7 @@ impl Assistant {
     /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
     pub fn new_with_callback<
         P: AsRef<Path>,
-        F: FnMut(message::AsstMsg, serde_json::Value) + Send + 'static,
+        F: FnMut(message::Message, serde_json::Value) + Send + 'static,
     >(
         path: P,
         callback: F,
