@@ -3648,7 +3648,6 @@ version = "0.1.0"
 dependencies = [
  "bindgen 0.71.1",
  "hashbrown 0.15.4",
- "libc",
  "libloading",
  "maa-macros",
  "serde",
