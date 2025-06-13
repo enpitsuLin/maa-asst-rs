@@ -1,7 +1,27 @@
+use std::{path::Path, sync::Once};
+
 use maa_sys::{task, Assistant, InstanceOptionKey};
+
+static INIT: Once = Once::new();
+
+pub fn initialize() {
+    INIT.call_once(|| {
+        let path = Path::new(env!("MAA_LIB_PATH")).join(
+            #[cfg(target_os = "macos")]
+            "libMaaCore.dylib",
+            #[cfg(target_os = "windows")]
+            "MaaCore.dll",
+            #[cfg(target_os = "linux")]
+            "libMaaCore.so",
+        );
+
+        Assistant::load(path).unwrap();
+    });
+}
 
 #[test]
 fn test_version() {
+    initialize();
     let version = Assistant::version().unwrap();
     assert_ne!(version, "");
 }
@@ -9,6 +29,7 @@ fn test_version() {
 #[test]
 #[ignore = "MaaCore 这个功能好像有点问题，暂时跳过"]
 fn test_get_uuid() {
+    initialize();
     let assistant = Assistant::new(env!("MAA_RESOURCE_PATH")).unwrap();
     let uuid = assistant.get_uuid().unwrap();
     assert_ne!(uuid, "");
@@ -16,6 +37,7 @@ fn test_get_uuid() {
 
 #[test]
 fn test_get_tasks_list() {
+    initialize();
     let mut assistant = Assistant::new(env!("MAA_RESOURCE_PATH")).unwrap();
     assistant
         .append_task(

@@ -2,6 +2,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
+    #[error("运行库加载失败")]
+    LibraryLoadFailed,
     #[error("资源加载失败")]
     ResourceLoadFailed,
     #[error("创建实例失败")]

@@ -2378,17 +2378,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "globwalk"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bf760ebf69878d9fd8f110c89703d90ce35095324d1f1edcb595c63945ee757"
-dependencies = [
- "bitflags 2.9.1",
- "ignore",
- "walkdir",
-]
-
-[[package]]
 name = "glow"
 version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3658,10 +3647,9 @@ name = "maa-sys"
 version = "0.1.0"
 dependencies = [
  "bindgen 0.71.1",
- "cc",
- "globwalk 0.9.1",
  "hashbrown 0.15.4",
  "libc",
+ "libloading",
  "maa-macros",
  "serde",
  "serde_json",
@@ -5294,7 +5282,7 @@ version = "3.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fda2551fdfaf6cc5ee283adc15e157047b92ae6535cf80f6d4962d05717dc332"
 dependencies = [
- "globwalk 0.8.1",
+ "globwalk",
  "once_cell",
  "regex",
  "rust-i18n-macro",
@@ -5327,7 +5315,7 @@ checksum = "940ed4f52bba4c0152056d771e563b7133ad9607d4384af016a134b58d758f19"
 dependencies = [
  "arc-swap",
  "base62",
- "globwalk 0.8.1",
+ "globwalk",
  "itertools 0.11.0",
  "lazy_static",
  "normpath",
