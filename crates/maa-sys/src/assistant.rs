@@ -4,14 +4,12 @@ use std::env::consts::OS;
 use std::ffi::{CStr, CString};
 use std::path::Path;
 use std::ptr::NonNull;
-use std::sync::OnceLock;
+use std::sync::Arc;
 
 use crate::{
     binding,
     protocol::{message, task},
 };
-
-static SHARED_LIBRARY: OnceLock<binding::MaaCore> = OnceLock::new();
 
 // 一张 720p 图像，24位色深，原始大小为 1280 * 720 * 3（2.7 MB）
 // 压缩后的图像数据应小于原始大小。
@@ -29,6 +27,8 @@ pub struct Assistant {
     target: Option<String>,
     /// 存储所有已添加的任务，键为任务ID
     tasks: HashMap<i32, Box<dyn task::Task>>,
+    /// MAA核心库实例
+    core: Arc<binding::MaaCore>,
 }
 
 /// 将Rust的回调函数转换为C的回调函数
@@ -56,45 +56,32 @@ impl Assistant {
     /// * `path` - 运行库文件的路径
     ///
     /// # Returns
-    /// * `Ok(())` - 加载成功
+    /// * `Ok(Arc<binding::MaaCore>)` - 加载成功
     /// * `Err(Error::LibraryLoadFailed)` - 加载失败
-    fn load_library<P: AsRef<Path>>(path: P) -> Result<(), Error> {
+    fn load_library<P: AsRef<Path>>(path: P) -> Result<Arc<binding::MaaCore>, Error> {
         let dylib_path = path.as_ref().join(match OS {
             "macos" => "libMaaCore.dylib",
             "windows" => "MaaCore.dll",
             "linux" => "libMaaCore.so",
             _ => return Err(Error::LibraryLoadFailed),
         });
-        let lib = unsafe {
-            binding::MaaCore::new(dylib_path)
-                .map_err(|_| Error::LibraryLoadFailed)
-                .unwrap()
-        };
-        SHARED_LIBRARY.set(lib).map_err(|_| Error::LibraryLoadFailed)
-    }
-
-    fn try_run<F, R>(f: F) -> Result<R, Error>
-    where
-        F: FnOnce(&binding::MaaCore) -> R,
-    {
-        match SHARED_LIBRARY.get() {
-            Some(lib) => Ok(f(lib)),
-            None => Err(Error::LibraryLoadFailed),
-        }
+        let lib = unsafe { binding::MaaCore::new(dylib_path).map_err(|_| Error::LibraryLoadFailed)? };
+        Ok(Arc::new(lib))
     }
 
     /// 加载MAA助手所需的资源文件
     ///
     /// # Arguments
     /// * `path` - 资源文件夹的路径
+    /// * `core` - MAA核心库实例
     ///
     /// # Returns
     /// * `Ok(())` - 资源加载成功
     /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
-    fn load_resource<P: AsRef<Path>>(path: P) -> Result<(), Error> {
+    fn load_resource<P: AsRef<Path>>(path: P, core: &binding::MaaCore) -> Result<(), Error> {
         let path = path.as_ref();
         let resource_path = CString::new(path.to_string_lossy().as_ref()).unwrap();
-        let ret = unsafe { Self::try_run(|lib| lib.AsstLoadResource(resource_path.as_ptr()))? };
+        let ret = unsafe { core.AsstLoadResource(resource_path.as_ptr()) };
 
         if ret != 0 {
             Ok(())
@@ -119,9 +106,7 @@ impl Assistant {
     ) -> Result<(), Error> {
         let value_str = CString::new(value.into()).unwrap();
         let ret = unsafe {
-            Self::try_run(|lib| {
-                lib.AsstSetInstanceOption(self.handle.as_ptr(), key as i32, value_str.as_ptr())
-            })?
+            self.core.AsstSetInstanceOption(self.handle.as_ptr(), key as i32, value_str.as_ptr())
         };
         if ret != 0 {
             Ok(())
@@ -139,9 +124,9 @@ impl Assistant {
     /// # Returns
     /// * `Ok(())` - 设置成功
     /// * `Err(Error::SetStaticOptionFailed)` - 设置失败
-    pub fn set_static_option(key: StaticOptionKey, value: impl Into<String>) -> Result<(), Error> {
+    pub fn set_static_option(&self, key: StaticOptionKey, value: impl Into<String>) -> Result<(), Error> {
         let value_str = CString::new(value.into()).unwrap();
-        let ret = Self::try_run(|lib| unsafe { lib.AsstSetStaticOption(key as i32, value_str.as_ptr()) })?;
+        let ret = unsafe { self.core.AsstSetStaticOption(key as i32, value_str.as_ptr()) };
 
         if ret != 0 {
             Ok(())
@@ -160,15 +145,16 @@ impl Assistant {
     /// * `Err(Error::CreateFailed)` - 创建失败
     /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
     pub fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
-        Self::load_library(path.as_ref())?;
-        Self::load_resource(path)?;
+        let core = Self::load_library(path.as_ref())?;
+        Self::load_resource(path, &core)?;
 
-        let handle = unsafe { Self::try_run(|lib| lib.AsstCreate())? };
+        let handle = unsafe { core.AsstCreate() };
         NonNull::new(handle)
-            .map(|handle: NonNull<binding::AsstExtAPI>| Self {
+            .map(|handle| Self {
                 handle,
                 target: None,
                 tasks: HashMap::new(),
+                core,
             })
             .ok_or(Error::CreateFailed)
     }
@@ -190,22 +176,20 @@ impl Assistant {
         path: P,
         callback: F,
     ) -> Result<Self, Error> {
-        Self::load_library(path.as_ref())?;
-        Self::load_resource(path)?;
+        let core = Self::load_library(path.as_ref())?;
+        Self::load_resource(path, &core)?;
 
         let processor = message::Processor::from(callback);
-
         let processor_ptr = Box::into_raw(Box::new(processor));
 
-        let handle = unsafe {
-            Self::try_run(|lib| lib.AsstCreateEx(Some(callback_wrapper), processor_ptr as *mut _))?
-        };
+        let handle = unsafe { core.AsstCreateEx(Some(callback_wrapper), processor_ptr as *mut _) };
 
         NonNull::new(handle)
             .map(|handle| Self {
                 handle,
                 target: None,
                 tasks: HashMap::new(),
+                core,
             })
             .ok_or(Error::CreateFailed)
     }
@@ -226,15 +210,13 @@ impl Assistant {
         let config_str = config.map(|c| CString::new(c).unwrap());
 
         let ret = unsafe {
-            Self::try_run(|lib| {
-                lib.AsstAsyncConnect(
-                    self.handle.as_ptr(),
-                    adb_path.as_ptr(),
-                    address_cstr.as_ptr(),
-                    config_str.as_ref().map_or(std::ptr::null(), |cs| cs.as_ptr()),
-                    1,
-                )
-            })?
+            self.core.AsstAsyncConnect(
+                self.handle.as_ptr(),
+                adb_path.as_ptr(),
+                address_cstr.as_ptr(),
+                config_str.as_ref().map_or(std::ptr::null(), |cs| cs.as_ptr()),
+                1,
+            )
         };
         if ret != 0 {
             self.target = Some(address.to_string());
@@ -257,10 +239,10 @@ impl Assistant {
         let params_str = CString::new(task.to_json()).unwrap();
 
         unsafe {
-            let task_id = Self::try_run(|lib| {
-                let asst_append_task = lib.AsstAppendTask.as_ref().unwrap();
+            let task_id = {
+                let asst_append_task = self.core.AsstAppendTask.as_ref().unwrap();
                 asst_append_task(self.handle.as_ptr(), type_str.as_ptr(), params_str.as_ptr())
-            })?;
+            };
             if task_id != 0 {
                 self.tasks.insert(task_id, Box::from(task));
                 Ok(task_id)
@@ -282,9 +264,7 @@ impl Assistant {
     pub fn set_task_params<T: task::Task + 'static>(&mut self, task_id: i32, task: T) -> Result<(), Error> {
         let params_str = CString::new(task.to_json()).unwrap();
         unsafe {
-            let ret = Self::try_run(|lib| {
-                lib.AsstSetTaskParams(self.handle.as_ptr(), task_id, params_str.as_ptr())
-            })?;
+            let ret = self.core.AsstSetTaskParams(self.handle.as_ptr(), task_id, params_str.as_ptr());
             if ret != 0 {
                 if let Some(old_task) = self.tasks.get_mut(&task_id) {
                     *old_task = Box::new(task);
@@ -303,7 +283,7 @@ impl Assistant {
     /// * `Err(Error::StartFailed)` - 启动失败
     pub fn start(&mut self) -> Result<(), Error> {
         unsafe {
-            if Self::try_run(|lib| lib.AsstStart(self.handle.as_ptr()))? != 0 {
+            if self.core.AsstStart(self.handle.as_ptr()) != 0 {
                 Ok(())
             } else {
                 Err(Error::StartFailed)
@@ -318,7 +298,7 @@ impl Assistant {
     /// * `Err(Error::StopFailed)` - 停止失败
     pub fn stop(&mut self) -> Result<(), Error> {
         unsafe {
-            if Self::try_run(|lib| lib.AsstStop(self.handle.as_ptr()))? != 0 {
+            if self.core.AsstStop(self.handle.as_ptr()) != 0 {
                 Ok(())
             } else {
                 Err(Error::StopFailed)
@@ -337,7 +317,7 @@ impl Assistant {
     /// * `Err(Error::ClickFailed)` - 点击失败
     pub fn click(&mut self, x: i32, y: i32) -> Result<(), Error> {
         unsafe {
-            if Self::try_run(|lib| lib.AsstAsyncClick(self.handle.as_ptr(), x, y, 1))? != 0 {
+            if self.core.AsstAsyncClick(self.handle.as_ptr(), x, y, 1) != 0 {
                 Ok(())
             } else {
                 Err(Error::ClickFailed)
@@ -352,10 +332,10 @@ impl Assistant {
     /// * `Err(Error::CaptureFailed)` - 截图失败
     pub fn capture_screenshot(&self) -> Result<(), Error> {
         unsafe {
-            if Self::try_run(|lib| {
-                let asst_async_screencap = lib.AsstAsyncScreencap.as_ref().unwrap();
+            if {
+                let asst_async_screencap = self.core.AsstAsyncScreencap.as_ref().unwrap();
                 asst_async_screencap(self.handle.as_ptr(), 1)
-            })? != 0
+            } != 0
             {
                 Ok(())
             } else {
@@ -366,14 +346,14 @@ impl Assistant {
 
     fn get_image_with_buf(&self, buf: *mut u8, size: usize) -> Result<binding::AsstSize, Error> {
         unsafe {
-            let ret = Self::try_run(|lib| {
-                let asst_get_image = lib.AsstGetImage.as_ref().unwrap();
+            let ret = {
+                let asst_get_image = self.core.AsstGetImage.as_ref().unwrap();
                 asst_get_image(
                     self.handle.as_ptr(),
                     buf as *mut std::os::raw::c_void,
                     size as binding::AsstSize,
                 )
-            })?;
+            };
 
             if ret != 0 {
                 Ok(ret)
@@ -413,10 +393,10 @@ impl Assistant {
     /// * `Err(Error::BackToHomeFailed)` - 返回失败
     pub fn back_to_home(&mut self) -> Result<(), Error> {
         unsafe {
-            if Self::try_run(|lib| {
-                let asst_back_to_home = lib.AsstBackToHome.as_ref().unwrap();
+            if {
+                let asst_back_to_home = self.core.AsstBackToHome.as_ref().unwrap();
                 asst_back_to_home(self.handle.as_ptr())
-            })? != 0
+            } != 0
             {
                 Ok(())
             } else {
@@ -427,7 +407,7 @@ impl Assistant {
 
     /// 获取空值的大小
     pub fn get_null_size(&self) -> Result<u64, Error> {
-        unsafe { Self::try_run(|lib| lib.AsstGetNullSize()) }
+        Ok(unsafe { self.core.AsstGetNullSize() })
     }
 
     /// 获取当前实例的UUID
@@ -443,14 +423,14 @@ impl Assistant {
                     return Err(Error::Unknown);
                 }
                 let mut buff: Vec<u8> = Vec::with_capacity(buff_size);
-                let data_size = Self::try_run(|lib| {
-                    let asst_get_uuid = lib.AsstGetUUID.as_ref().unwrap();
+                let data_size = {
+                    let asst_get_uuid = self.core.AsstGetUUID.as_ref().unwrap();
                     asst_get_uuid(
                         self.handle.as_ptr(),
                         buff.as_mut_ptr() as *mut i8,
                         buff_size as u64,
                     )
-                })?;
+                };
                 if data_size == self.get_null_size()? {
                     buff_size = 2 * buff_size;
                     continue;
@@ -472,10 +452,10 @@ impl Assistant {
         let mut list: Vec<i32> = Vec::with_capacity(1000);
         unsafe {
             let buff = list.as_mut_ptr();
-            let data_size = Self::try_run(|lib| {
-                let asst_get_tasks_list = lib.AsstGetTasksList.as_ref().unwrap();
+            let data_size = {
+                let asst_get_tasks_list = self.core.AsstGetTasksList.as_ref().unwrap();
                 asst_get_tasks_list(self.handle.as_ptr(), buff, list.capacity().try_into().unwrap())
-            })?;
+            };
             list.set_len(data_size.try_into()?);
             list.shrink_to_fit();
 
@@ -496,13 +476,8 @@ impl Assistant {
     /// * `false` - 未运行
     pub fn is_running(&self) -> bool {
         unsafe {
-            match Self::try_run(|lib| {
-                let asst_running = lib.AsstRunning.as_ref().unwrap();
-                asst_running(self.handle.as_ptr())
-            }) {
-                Ok(ret) => ret != 0,
-                Err(_) => false,
-            }
+            let asst_running = self.core.AsstRunning.as_ref().unwrap();
+            asst_running(self.handle.as_ptr()) != 0
         }
     }
 
@@ -513,13 +488,8 @@ impl Assistant {
     /// * `false` - 未连接
     pub fn is_connected(&self) -> bool {
         unsafe {
-            match Self::try_run(|lib| {
-                let asst_connected = lib.AsstConnected.as_ref().unwrap();
-                asst_connected(self.handle.as_ptr())
-            }) {
-                Ok(ret) => ret != 0,
-                Err(_) => false,
-            }
+            let asst_connected = self.core.AsstConnected.as_ref().unwrap();
+            asst_connected(self.handle.as_ptr()) != 0
         }
     }
 
@@ -532,10 +502,9 @@ impl Assistant {
         let level_cstr = CString::new(level).unwrap();
         let message_cstr = CString::new(message).unwrap();
         unsafe {
-            Self::try_run(|lib| {
-                let asst_log = lib.AsstLog.as_ref().unwrap();
-                asst_log(level_cstr.as_ptr(), message_cstr.as_ptr())
-            })
+            let asst_log = self.core.AsstLog.as_ref().unwrap();
+            asst_log(level_cstr.as_ptr(), message_cstr.as_ptr());
+            Ok(())
         }
     }
 
@@ -546,13 +515,11 @@ impl Assistant {
     /// * `Err(Error::Unknown)` - 获取失败
     pub fn version(&self) -> Result<String, Error> {
         unsafe {
-            CStr::from_ptr(Self::try_run(|lib| {
-                let asst_get_version = lib.AsstGetVersion.as_ref().unwrap();
-                asst_get_version()
-            })?)
-            .to_str()
-            .map(|s| s.to_string())
-            .map_err(|_| Error::Unknown)
+            let asst_get_version = self.core.AsstGetVersion.as_ref().unwrap();
+            CStr::from_ptr(asst_get_version())
+                .to_str()
+                .map(|s| s.to_string())
+                .map_err(|_| Error::Unknown)
         }
     }
 }
@@ -561,11 +528,8 @@ impl Assistant {
 impl Drop for Assistant {
     fn drop(&mut self) {
         unsafe {
-            Self::try_run(|lib| {
-                let asst_destroy = lib.AsstDestroy.as_ref().unwrap();
-                asst_destroy(self.handle.as_ptr());
-            })
-            .unwrap();
+            let asst_destroy = self.core.AsstDestroy.as_ref().unwrap();
+            asst_destroy(self.handle.as_ptr());
         }
     }
 }
