@@ -12,7 +12,7 @@ rust-version = "1.87.0"
 [dependencies]
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-maa-sys-derive = { workspace = true }
+maa-macros = { workspace = true }
 serde_with = "3.12.0"
 thiserror = "2.0.12"
 hashbrown = { version = "0.15.4", features = ["serde"] }

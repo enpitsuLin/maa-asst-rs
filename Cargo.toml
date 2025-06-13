@@ -11,7 +11,7 @@ members = ["crates/*"]
 
 [workspace.dependencies]
 maa-sys = { path = "crates/maa-sys" }
-maa-sys-derive = { path = "crates/maa-sys-derive" }
+maa-macros = { path = "crates/maa-macros" }
 maa-installer = { path = "crates/maa-installer" }
 
 anyhow = "1.0.98"

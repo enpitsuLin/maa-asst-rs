@@ -3656,6 +3656,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "maa-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.102",
+]
+
+[[package]]
 name = "maa-sys"
 version = "0.1.0"
 dependencies = [
@@ -3664,20 +3673,11 @@ dependencies = [
  "globwalk 0.9.1",
  "hashbrown 0.15.4",
  "libc",
- "maa-sys-derive",
+ "maa-macros",
  "serde",
  "serde_json",
  "serde_with",
  "thiserror 2.0.12",
-]
-
-[[package]]
-name = "maa-sys-derive"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.102",
 ]
 
 [[package]]

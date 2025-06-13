@@ -1,6 +1,6 @@
 use hashbrown::HashMap;
 
-use maa_sys_derive::Task;
+use maa_macros::Task;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use serde_with::skip_serializing_none;
