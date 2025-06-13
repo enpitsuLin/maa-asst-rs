@@ -1,6 +1,6 @@
 use hashbrown::HashMap;
 
-use maa_macros::Task;
+use maa_macros::GenerateTask;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use serde_with::skip_serializing_none;
@@ -42,7 +42,7 @@ pub trait Task {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "开始唤醒", task_type = "StartUp")]
 pub struct StartUpTask {
     /// 是否启用本任务，默认为 `true`
@@ -83,7 +83,7 @@ pub struct StartUpTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "关闭游戏", task_type = "CloseDown")]
 pub struct CloseDownTask {
     /// 是否启用本任务，默认为 `true`
@@ -136,7 +136,7 @@ pub struct CloseDownTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "刷理智", task_type = "Fight")]
 pub struct FightTask {
     /// 是否启用本任务，默认为 `true`
@@ -201,7 +201,7 @@ pub struct FightTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "公开招募", task_type = "Recruit")]
 pub struct RecruitTask {
     /// 是否启用本任务，默认为 `true`
@@ -273,7 +273,7 @@ pub struct RecruitTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "基建换班", task_type = "Infrast")]
 pub struct InfrastTask {
     /// 是否启用本任务，默认为 `true`
@@ -329,7 +329,7 @@ pub struct InfrastTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "商店", task_type = "Mall")]
 pub struct MallTask {
     /// 是否启用本任务，默认为 `true`
@@ -372,7 +372,7 @@ pub struct MallTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "奖励领取", task_type = "Award")]
 pub struct AwardTask {
     /// 是否启用本任务，默认为 `true`
@@ -442,7 +442,7 @@ pub struct AwardTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "肉鸽", task_type = "Roguelike")]
 pub struct RoguelikeTask {
     /// 是否启用本任务，默认为 `true`
@@ -533,7 +533,7 @@ pub struct RoguelikeTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "自动抄作业", task_type = "Copilot")]
 pub struct CopilotTask {
     /// 是否启用本任务，默认为 `true`
@@ -564,7 +564,7 @@ pub struct CopilotTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "自动抄保全作业", task_type = "SSSCopilot")]
 pub struct SSSCopilotTask {
     /// 是否启用本任务，默认为 `true`
@@ -591,7 +591,7 @@ pub struct SSSCopilotTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "仓库识别", task_type = "Depot")]
 pub struct DepotTask {
     /// 是否启用本任务，默认为 `true`
@@ -614,7 +614,7 @@ pub struct DepotTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "干员 box 识别", task_type = "OperBox")]
 pub struct OperBoxTask {
     /// 是否启用本任务，默认为 `true`
@@ -651,7 +651,7 @@ pub struct OperBoxTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "生息演算", task_type = "Reclamation")]
 pub struct ReclamationTask {
     /// 是否启用本任务，默认为 `true`
@@ -700,7 +700,7 @@ pub struct ReclamationTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "自定义", task_type = "Custom")]
 pub struct CustomTask {
     /// 是否启用本任务，必选
@@ -740,7 +740,7 @@ pub struct CustomTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "单步", task_type = "SingleStep")]
 pub struct SingleStepTask {
     /// 是否启用本任务，必选
@@ -776,7 +776,7 @@ pub struct SingleStepTask {
 ///     .build();
 /// ```
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, Task)]
+#[derive(Debug, Clone, Serialize, Deserialize, GenerateTask)]
 #[task(name = "视频识别", task_type = "VideoRecognition")]
 pub struct VideoRecognitionTask {
     /// 是否启用本任务，必选
