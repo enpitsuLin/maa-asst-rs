@@ -59,14 +59,12 @@ impl Assistant {
     /// * `Ok(())` - 加载成功
     /// * `Err(Error::LibraryLoadFailed)` - 加载失败
     fn load_library<P: AsRef<Path>>(path: P) -> Result<(), Error> {
-        println!("path: {:?}", path.as_ref());
         let dylib_path = path.as_ref().join(match OS {
             "macos" => "libMaaCore.dylib",
             "windows" => "MaaCore.dll",
             "linux" => "libMaaCore.so",
             _ => return Err(Error::LibraryLoadFailed),
         });
-        println!("dylib_path: {:?}", dylib_path);
         let lib = unsafe {
             binding::MaaCore::new(dylib_path)
                 .map_err(|_| Error::LibraryLoadFailed)
