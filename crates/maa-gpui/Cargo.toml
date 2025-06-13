@@ -12,14 +12,14 @@ build = "build.rs"
 [dependencies]
 gpui = { git = "https://github.com/zed-industries/zed.git" }
 reqwest_client = { git = "https://github.com/zed-industries/zed.git" }
-gpui-component = { git = "https://github.com/longbridge/gpui-component.git"  }
+gpui-component = { git = "https://github.com/longbridge/gpui-component.git" }
 
-ffi = { package = "maa-sys", version = "0.1.0", path = "../maa-sys" }
+maa-sys = { workspace = true }
 # TODO: 移除多余的 features
-tokio = { version = "1.45.1", features = ["full"] }
-anyhow = "1.0.98"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+tokio = { workspace = true, features = ["full"] }
+anyhow = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
 notify = "8.0.0"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

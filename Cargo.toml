@@ -8,3 +8,14 @@ repository = "https://github.com/enpitsuLin/maa-asst-rs"
 [workspace]
 resolver = "2"
 members = ["crates/*"]
+
+[workspace.dependencies]
+maa-sys = { path = "crates/maa-sys" }
+maa-sys-derive = { path = "crates/maa-sys-derive" }
+maa-installer = { path = "crates/maa-installer" }
+
+anyhow = "1.0.98"
+semver = "1.0.19"
+serde = "1"
+tokio = "1.45.1"
+serde_json = "1"
