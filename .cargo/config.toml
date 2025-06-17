@@ -1,0 +1,6 @@
+[alias]
+xtask = "run --package xtask --"
+
+
+[env]
+MAA_HEADER_PATH = { value = "", relative = true }

@@ -1,13 +1,15 @@
-[workspace.package]
-authors = ['enpitsulin <enpitsulin@gmail.com>']
-description = "N/a"
-edition = "2021"
-license = "MIT"
-repository = "https://github.com/enpitsuLin/maa-asst-rs"
-
 [workspace]
 resolver = "2"
-members = ["crates/*"]
+members = ["crates/*", "xtask"]
+
+[workspace.package]
+authors = ['enpitsulin <enpitsulin@gmail.com>']
+license = "MIT"
+edition = "2021"
+repository = "https://github.com/enpitsuLin/maa-asst-rs"
+rust-version = "1.87"
+description = "N/a"
+
 
 [workspace.dependencies]
 maa-sys = { path = "crates/maa-sys" }
@@ -19,3 +21,6 @@ semver = "1.0.19"
 serde = "1"
 tokio = "1.45.1"
 serde_json = "1"
+
+
+[profile.dev.package]

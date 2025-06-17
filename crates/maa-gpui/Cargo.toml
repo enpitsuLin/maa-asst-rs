@@ -1,12 +1,15 @@
 [package]
 name = "maa-gpui"
 version = "0.0.1"
-license = "MIT"
-authors = ['enpitsulin <enpitsulin@gmail.com>']
 description = "基于 GPUI 的明日方舟 MMA 助手的 GUI"
 readme = "README.md"
-edition = "2021"
-rust-version = "1.87.0"
+publish = false
+authors.workspace = true 
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
 build = "build.rs"
 
 [dependencies]
