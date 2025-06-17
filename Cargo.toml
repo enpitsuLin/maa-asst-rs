@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = ["crates/*", "xtask", "app/*"]
-default-members = ["app/maa"]
+default-members = ["app/zoot"]
 
 [workspace.package]
 authors = ['enpitsulin <enpitsulin@gmail.com>']

@@ -3761,25 +3761,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "maa"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "embed-resource",
- "global",
- "gpui",
- "gpui-component",
- "reqwest_client",
- "rust-embed",
- "serde",
- "serde_json",
- "settings",
- "smallvec",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "maa-macros"
 version = "0.1.0"
 dependencies = [
@@ -8956,6 +8937,25 @@ dependencies = [
  "crc32fast",
  "crossbeam-utils",
  "flate2",
+]
+
+[[package]]
+name = "zoot"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "embed-resource",
+ "global",
+ "gpui",
+ "gpui-component",
+ "reqwest_client",
+ "rust-embed",
+ "serde",
+ "serde_json",
+ "settings",
+ "smallvec",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
