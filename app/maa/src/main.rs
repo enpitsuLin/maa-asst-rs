@@ -1,11 +1,12 @@
 use assets::Assets;
 use global::constants::{APP_ID, APP_NAME};
 use gpui::{
-    actions, div, prelude::*, px, rgb, size, App, AppContext, Application, Bounds, Context, IntoElement,
+    actions, div, prelude::*, px, size, AnyView, App, AppContext, Application, Bounds, Context, IntoElement,
     KeyBinding, Menu, MenuItem, Render, Window, WindowBounds, WindowKind, WindowOptions,
 };
 use gpui::{point, SharedString, TitlebarOptions};
-use gpui_component::Theme;
+use gpui_component::button::{Button, ButtonVariants};
+use gpui_component::{ActiveTheme, IconName, Root, Sizable, Theme, ThemeMode, TitleBar};
 use reqwest_client::ReqwestClient;
 use std::sync::Arc;
 
@@ -15,37 +16,91 @@ struct HelloWorld {
     text: SharedString,
 }
 
-impl Render for HelloWorld {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        div()
-            .flex()
-            .flex_col()
-            .gap_3()
-            .bg(rgb(0x505050))
-            .size_full()
-            .justify_center()
-            .items_center()
-            .shadow_lg()
-            .border_1()
-            .border_color(rgb(0x0000ff))
-            .text_xl()
-            .text_color(rgb(0xffffff))
-            .child(format!("Hello, {}!", &self.text))
-            .child(
-                div()
-                    .flex()
-                    .gap_2()
-                    .child(div().size_8().bg(gpui::red()))
-                    .child(div().size_8().bg(gpui::green()))
-                    .child(div().size_8().bg(gpui::blue()))
-                    .child(div().size_8().bg(gpui::yellow()))
-                    .child(div().size_8().bg(gpui::black()))
-                    .child(div().size_8().bg(gpui::white())),
-            )
+impl HelloWorld {
+    fn toggle_appearance(&self, window: &mut Window, cx: &mut App) {
+        if cx.theme().mode.is_dark() {
+            Theme::change(ThemeMode::Light, Some(window), cx);
+        } else {
+            Theme::change(ThemeMode::Dark, Some(window), cx);
+        }
+    }
+    fn open_settings(&self, _window: &mut Window, _cx: &mut App) {
+        tracing::info!("Opening settings");
     }
 }
 
-actions!(maa, [Quit]);
+impl Render for HelloWorld {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        div().size_full().relative().child(
+            div()
+                .flex()
+                .flex_col()
+                .size_full()
+                .child(
+                    TitleBar::new()
+                        // Left side
+                        .child(div())
+                        // Right side
+                        .child(
+                            div()
+                                .flex()
+                                .items_center()
+                                .justify_end()
+                                .gap_1p5()
+                                .px_2()
+                                .child(
+                                    Button::new("appearance")
+                                        .tooltip("Change the app's appearance")
+                                        .small()
+                                        .ghost()
+                                        .map(|this| {
+                                            if cx.theme().mode.is_dark() {
+                                                this.icon(IconName::Sun)
+                                            } else {
+                                                this.icon(IconName::Moon)
+                                            }
+                                        })
+                                        .on_click(cx.listener(|this, _, window, cx| {
+                                            this.toggle_appearance(window, cx);
+                                        })),
+                                )
+                                .child(
+                                    Button::new("preferences")
+                                        .tooltip("Open Preferences")
+                                        .small()
+                                        .ghost()
+                                        .icon(IconName::Settings)
+                                        .on_click(cx.listener(|this, _, window, cx| {
+                                            this.open_settings(window, cx);
+                                        })),
+                                ),
+                        ),
+                )
+                .child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .size_full()
+                        .items_center()
+                        .justify_center()
+                        .child(format!("Hello, {}!", &self.text))
+                        .child(
+                            div()
+                                .flex()
+                                .gap_2()
+                                .child(div().size_8().bg(gpui::red()))
+                                .child(div().size_8().bg(gpui::green()))
+                                .child(div().size_8().bg(gpui::blue()))
+                                .child(div().size_8().bg(gpui::yellow()))
+                                .child(div().size_8().bg(gpui::black()))
+                                .child(div().size_8().bg(gpui::white())),
+                        ),
+                ),
+        )
+    }
+}
+
+actions!(maa, [About, Setting, Quit]);
 
 fn main() {
     tracing_subscriber::fmt::init();
@@ -57,6 +112,8 @@ fn main() {
     app.run(|cx| {
         // Register the `quit` function
         cx.on_action(quit);
+        cx.on_action(setting);
+        cx.on_action(about);
 
         // Register the `quit` function with CMD+Q (macOS only)
         #[cfg(target_os = "macos")]
@@ -64,8 +121,13 @@ fn main() {
 
         // Set menu items
         cx.set_menus(vec![Menu {
-            name: "MAA".into(),
-            items: vec![MenuItem::action("Quit", Quit)],
+            name: SharedString::new_static(APP_NAME),
+            items: vec![
+                MenuItem::action("Settings", Setting),
+                MenuItem::action("About", About),
+                MenuItem::separator(),
+                MenuItem::action("Quit", Quit),
+            ],
         }]);
 
         cx.on_window_closed(|cx| {
@@ -119,11 +181,21 @@ fn main() {
                 // Initialize components
                 gpui_component::init(cx);
 
-                HelloWorld { text: "World".into() }
+                let hello_world_view = cx.new(|_| HelloWorld { text: "World".into() });
+
+                Root::new(AnyView::from(hello_world_view), window, cx)
             })
         })
         .expect("Failed to open window. Please restart the application.");
     });
+}
+
+fn setting(_: &Setting, _cx: &mut App) {
+    tracing::info!("Opening settings");
+}
+
+fn about(_: &About, _cx: &mut App) {
+    tracing::info!("Opening about");
 }
 
 fn quit(_: &Quit, cx: &mut App) {
