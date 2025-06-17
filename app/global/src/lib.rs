@@ -1,6 +1,5 @@
-use std::{fs, sync::OnceLock};
-
 use crate::paths::support_dir;
+use std::{fs, sync::OnceLock};
 
 pub mod constants;
 pub mod paths;
@@ -23,8 +22,8 @@ pub fn shared_state() -> &'static Globals {
 }
 
 impl Globals {
-    pub fn get_settings(&self) -> Option<String> {
-        let file = support_dir().join("maa.json");
+    pub fn read_settings(&self) -> Option<String> {
+        let file = support_dir().join("zoot.json");
 
         if file.exists() {
             Some(fs::read_to_string(file).unwrap())
@@ -33,15 +32,15 @@ impl Globals {
         }
     }
 
-    pub fn set_settings(&self, settings: String) -> Result<(), anyhow::Error> {
-        let file = support_dir().join("maa.json");
+    pub fn write_settings(&self, settings: String) -> Result<(), anyhow::Error> {
+        let file = support_dir().join("zoot.json");
         fs::write(file, settings)?;
         Ok(())
     }
 }
 
 fn is_first_run() -> Result<bool, anyhow::Error> {
-    let flag = support_dir().join(".maa_first_run");
+    let flag = support_dir().join(".zoot_first_run");
 
     if !flag.exists() {
         fs::write(&flag, "")?;

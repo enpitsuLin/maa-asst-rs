@@ -1,10 +1,17 @@
+use crate::constants::APP_NAME;
+use directories::{BaseDirs, ProjectDirs, UserDirs};
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
 /// Returns the path to the user's home directory.
 pub fn home_dir() -> &'static PathBuf {
     static HOME_DIR: OnceLock<PathBuf> = OnceLock::new();
-    HOME_DIR.get_or_init(|| dirs::home_dir().expect("failed to determine home directory"))
+    HOME_DIR.get_or_init(|| {
+        UserDirs::new()
+            .expect("failed to determine home directory")
+            .home_dir()
+            .to_path_buf()
+    })
 }
 
 /// Returns the path to the configuration directory used by MAA.
@@ -12,21 +19,25 @@ pub fn config_dir() -> &'static PathBuf {
     static CONFIG_DIR: OnceLock<PathBuf> = OnceLock::new();
     CONFIG_DIR.get_or_init(|| {
         if cfg!(target_os = "windows") {
-            return dirs::config_dir()
+            return BaseDirs::new()
                 .expect("failed to determine RoamingAppData directory")
-                .join("MAA");
+                .config_dir()
+                .join(APP_NAME);
         }
 
         if cfg!(any(target_os = "linux", target_os = "freebsd")) {
             return if let Ok(flatpak_xdg_config) = std::env::var("FLATPAK_XDG_CONFIG_HOME") {
-                flatpak_xdg_config.into()
+                PathBuf::from(flatpak_xdg_config)
             } else {
-                dirs::config_dir().expect("failed to determine XDG_CONFIG_HOME directory")
+                BaseDirs::new()
+                    .expect("failed to determine XDG_CONFIG_HOME directory")
+                    .config_dir()
+                    .to_path_buf()
             }
-            .join("MAA");
+            .join(APP_NAME);
         }
 
-        home_dir().join(".config").join("MAA")
+        home_dir().join(".config").join(APP_NAME)
     })
 }
 
@@ -34,31 +45,9 @@ pub fn config_dir() -> &'static PathBuf {
 pub fn support_dir() -> &'static PathBuf {
     static SUPPORT_DIR: OnceLock<PathBuf> = OnceLock::new();
     SUPPORT_DIR.get_or_init(|| {
-        if cfg!(target_os = "macos") {
-            return home_dir().join("Library/Application Support/MAA");
-        }
-
-        if cfg!(any(target_os = "linux", target_os = "freebsd")) {
-            return if let Ok(flatpak_xdg_data) = std::env::var("FLATPAK_XDG_DATA_HOME") {
-                flatpak_xdg_data.into()
-            } else {
-                dirs::data_local_dir().expect("failed to determine XDG_DATA_HOME directory")
-            }
-            .join("MAA");
-        }
-
-        if cfg!(target_os = "windows") {
-            return dirs::data_local_dir()
-                .expect("failed to determine LocalAppData directory")
-                .join("MAA");
-        }
-
-        config_dir().clone()
+        ProjectDirs::from("me", "enpitsulin", "zoot-maa")
+            .expect("couldn't find project dirs")
+            .data_dir()
+            .to_path_buf()
     })
-}
-
-/// Returns the path to the `maa` resource file.
-pub fn maa_file() -> &'static PathBuf {
-    static MAA_FILE: OnceLock<PathBuf> = OnceLock::new();
-    MAA_FILE.get_or_init(|| support_dir().join("maa"))
 }

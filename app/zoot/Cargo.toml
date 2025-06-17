@@ -8,6 +8,10 @@ repository.workspace = true
 rust-version.workspace = true
 description.workspace = true
 
+[[bin]]
+name = "ZOOT"
+path = "src/main.rs"
+
 [dependencies]
 settings = { path = "../settings" }
 global = { path = "../global" }
@@ -20,7 +24,8 @@ serde.workspace = true
 serde_json.workspace = true
 rust-embed = "8.7.2"
 tracing.workspace = true
-tracing-subscriber = { version = "0.3.18", features = ["fmt"] }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "fmt"] }
+tracing-appender = "0.2.3"
 
 [build-dependencies]
 embed-resource = "3.0.4"
