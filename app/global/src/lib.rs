@@ -1,4 +1,4 @@
-use crate::paths::support_dir;
+use crate::paths::project_dir;
 use std::{fs, sync::OnceLock};
 
 pub mod constants;
@@ -23,7 +23,7 @@ pub fn shared_state() -> &'static Globals {
 
 impl Globals {
     pub fn read_settings(&self) -> Option<String> {
-        let file = support_dir().join("zoot.json");
+        let file = project_dir().config_dir().join("zoot.json");
 
         if file.exists() {
             Some(fs::read_to_string(file).unwrap())
@@ -33,14 +33,19 @@ impl Globals {
     }
 
     pub fn write_settings(&self, settings: String) -> Result<(), anyhow::Error> {
-        let file = support_dir().join("zoot.json");
+        let dir = project_dir().config_dir();
+        if !dir.exists() {
+            fs::create_dir_all(dir)?;
+        }
+
+        let file = dir.join("zoot.json");
         fs::write(file, settings)?;
         Ok(())
     }
 }
 
 fn is_first_run() -> Result<bool, anyhow::Error> {
-    let flag = support_dir().join(".zoot_first_run");
+    let flag = project_dir().data_dir().join(".zootrc");
 
     if !flag.exists() {
         fs::write(&flag, "")?;

@@ -5,7 +5,7 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt as _;
 use tracing_subscriber::EnvFilter;
 
-use global::paths::support_dir;
+use global::paths::project_dir;
 
 pub fn init_logger() {
     let targets_filter = Targets::new().with_targets(vec![("ZOOT", Level::DEBUG)]);
@@ -20,7 +20,7 @@ pub fn init_logger() {
         }
     });
 
-    let file_appender = rolling::hourly(support_dir().join("logs"), "log");
+    let file_appender = rolling::hourly(project_dir().data_dir().join("logs"), "log");
     let (non_blocking_appender, _guard) = non_blocking(file_appender);
 
     let file_layer = tracing_subscriber::fmt::layer()

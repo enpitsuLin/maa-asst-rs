@@ -42,12 +42,9 @@ pub fn config_dir() -> &'static PathBuf {
 }
 
 /// Returns the path to the support directory used by MAA.
-pub fn support_dir() -> &'static PathBuf {
-    static SUPPORT_DIR: OnceLock<PathBuf> = OnceLock::new();
-    SUPPORT_DIR.get_or_init(|| {
-        ProjectDirs::from("me", "enpitsulin", "zoot-maa")
-            .expect("couldn't find project dirs")
-            .data_dir()
-            .to_path_buf()
+pub fn project_dir() -> &'static ProjectDirs {
+    static PROJECT_DIR: OnceLock<ProjectDirs> = OnceLock::new();
+    PROJECT_DIR.get_or_init(|| {
+        ProjectDirs::from("me", "enpitsulin", "zoot-maa").expect("couldn't find project dirs")
     })
 }
