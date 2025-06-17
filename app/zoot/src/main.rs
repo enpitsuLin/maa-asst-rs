@@ -113,6 +113,7 @@ impl Render for HelloWorld {
                                         this.settings.foo = "baz".to_string();
                                         cx.notify();
                                     });
+                                    tracing::info!("Test button clicked");
                                 })),
                         ),
                 ),
@@ -123,7 +124,7 @@ impl Render for HelloWorld {
 actions!(maa, [About, Setting, Quit]);
 
 fn init_logger() {
-    // let targets_filter = Targets::new().with_targets(vec![("ZOOT", Level::DEBUG)]);
+    let targets_filter = Targets::new().with_targets(vec![("ZOOT", Level::DEBUG)]);
     let global_env_filter = EnvFilter::try_from_env("ZOOT_LOG").unwrap_or_else(|_| {
         #[cfg(debug_assertions)]
         {
@@ -135,19 +136,18 @@ fn init_logger() {
         }
     });
 
-    let file_appender = rolling::daily(support_dir().join("logs"), "log");
+    let file_appender = rolling::hourly(support_dir().join("logs"), "log");
     let (non_blocking_appender, _guard) = non_blocking(file_appender);
 
     let file_layer = tracing_subscriber::fmt::layer()
         .with_ansi(false)
-        .with_writer(non_blocking_appender);
+        .with_writer(non_blocking_appender)
+        .boxed();
 
-    let fmt_layer = tracing_subscriber::fmt::layer()
-        .pretty()
-        .with_writer(std::io::stdout);
+    let fmt_layer = tracing_subscriber::fmt::layer().with_writer(std::io::stdout);
 
     tracing_subscriber::registry()
-        // .with(targets_filter)
+        .with(targets_filter)
         .with(global_env_filter)
         .with(fmt_layer)
         .with(file_layer)
@@ -246,11 +246,11 @@ fn main() {
 }
 
 fn setting(_: &Setting, _cx: &mut App) {
-    tracing::info!("Opening settings");
+    tracing::debug!("Opening settings");
 }
 
 fn about(_: &About, _cx: &mut App) {
-    tracing::info!("Opening about");
+    tracing::debug!("Opening about");
 }
 
 fn quit(_: &Quit, cx: &mut App) {

@@ -107,7 +107,7 @@ impl AppSettings {
                 if let Err(e) = shared_state().write_settings(content) {
                     tracing::error!("Failed to save user settings: {e}");
                 } else {
-                    tracing::info!("New settings have been saved successfully");
+                    tracing::debug!("New settings have been saved successfully");
                 }
             })
             .detach();
