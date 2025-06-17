@@ -119,7 +119,7 @@ impl Render for HelloWorld {
 actions!(maa, [About, Setting, Quit]);
 
 fn main() {
-    logger::init_logger();
+    let _guard = logger::init_logger();
 
     let app = Application::new()
         .with_assets(Assets)
