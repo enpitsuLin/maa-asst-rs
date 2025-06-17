@@ -5,6 +5,7 @@ use gpui::{
     KeyBinding, Menu, MenuItem, Render, Window, WindowBounds, WindowKind, WindowOptions,
 };
 use gpui::{point, SharedString, TitlebarOptions};
+use gpui_component::Theme;
 use reqwest_client::ReqwestClient;
 use std::sync::Arc;
 
@@ -104,8 +105,8 @@ fn main() {
         cx.open_window(opts, |window, cx| {
             // Automatically sync theme with system appearance
             window
-                .observe_window_appearance(|_window, _cx| {
-                    // TODO: Implement theme sync
+                .observe_window_appearance(|window, cx| {
+                    Theme::sync_system_appearance(Some(window), cx);
                 })
                 .detach();
 
