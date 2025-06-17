@@ -186,6 +186,7 @@ fn main() {
 
         cx.on_window_closed(|cx| {
             if cx.windows().is_empty() {
+                tracing::info!("Gracefully quitting the application . . .");
                 cx.quit();
             }
         })
