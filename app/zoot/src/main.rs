@@ -1,9 +1,10 @@
 use assets::Assets;
 use global::constants::{APP_ID, APP_NAME};
-use global::paths::support_dir;
+#[cfg(target_os = "macos")]
+use gpui::KeyBinding;
 use gpui::{
     actions, div, prelude::*, px, size, AnyView, App, AppContext, Application, Bounds, Context, IntoElement,
-    KeyBinding, Menu, MenuItem, Render, Window, WindowBounds, WindowKind, WindowOptions,
+    Menu, MenuItem, Render, Window, WindowBounds, WindowKind, WindowOptions,
 };
 use gpui::{point, SharedString, TitlebarOptions};
 use gpui_component::button::{Button, ButtonVariants};
@@ -12,14 +13,8 @@ use reqwest_client::ReqwestClient;
 use settings::AppSettings;
 use std::sync::Arc;
 
-use tracing::Level;
-use tracing_appender::{non_blocking, rolling};
-use tracing_subscriber::filter::Targets;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::util::SubscriberInitExt as _;
-use tracing_subscriber::{EnvFilter, Layer};
-
 mod assets;
+mod logger;
 
 struct HelloWorld {
     text: SharedString,
@@ -123,41 +118,8 @@ impl Render for HelloWorld {
 
 actions!(maa, [About, Setting, Quit]);
 
-fn init_logger() {
-    let targets_filter = Targets::new().with_targets(vec![("ZOOT", Level::DEBUG)]);
-    let global_env_filter = EnvFilter::try_from_env("ZOOT_LOG").unwrap_or_else(|_| {
-        #[cfg(debug_assertions)]
-        {
-            EnvFilter::new("debug")
-        }
-        #[cfg(not(debug_assertions))]
-        {
-            EnvFilter::new("warn")
-        }
-    });
-
-    let file_appender = rolling::hourly(support_dir().join("logs"), "log");
-    let (non_blocking_appender, _guard) = non_blocking(file_appender);
-
-    let file_layer = tracing_subscriber::fmt::layer()
-        .with_ansi(false)
-        .with_writer(non_blocking_appender)
-        .boxed();
-
-    let fmt_layer = tracing_subscriber::fmt::layer().with_writer(std::io::stdout);
-
-    tracing_subscriber::registry()
-        .with(targets_filter)
-        .with(global_env_filter)
-        .with(fmt_layer)
-        .with(file_layer)
-        .init();
-
-    tracing::info!("Logger initialized");
-}
-
 fn main() {
-    init_logger();
+    logger::init_logger();
 
     let app = Application::new()
         .with_assets(Assets)
