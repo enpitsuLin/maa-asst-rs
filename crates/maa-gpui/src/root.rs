@@ -5,7 +5,7 @@ use crate::ui::components::title_bar::AppTitleBar;
 
 pub struct MAARoot {
     title_bar: Entity<AppTitleBar>,
-    view: AnyView,
+    view: AnyView
 }
 
 impl MAARoot {
@@ -13,7 +13,7 @@ impl MAARoot {
         let title_bar = cx.new(|_| AppTitleBar::new());
         Self {
             title_bar,
-            view: view.into(),
+            view: view.into()
         }
     }
 }
@@ -30,7 +30,7 @@ impl Render for MAARoot {
                 v_flex()
                     .size_full()
                     .child(self.title_bar.clone())
-                    .child(div().flex_1().overflow_hidden().child(self.view.clone())),
+                    .child(div().flex_1().overflow_hidden().child(self.view.clone()))
             )
             .children(drawer_layer)
             .children(modal_layer)

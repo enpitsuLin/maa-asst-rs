@@ -1,5 +1,4 @@
-use anyhow::anyhow;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use gpui::{AssetSource, SharedString};
 use rust_embed::RustEmbed;
 

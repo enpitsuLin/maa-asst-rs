@@ -2,7 +2,7 @@ use gpui::{App, Global, SharedString};
 
 pub struct AppState {
     pub title: SharedString,
-    pub sidebar_collapsed: bool,
+    pub sidebar_collapsed: bool
 }
 
 impl Global for AppState {}
@@ -11,7 +11,7 @@ impl AppState {
     pub fn init(cx: &mut App, title: impl Into<SharedString>) {
         cx.set_global(Self {
             title: title.into(),
-            sidebar_collapsed: false,
+            sidebar_collapsed: false
         });
     }
 

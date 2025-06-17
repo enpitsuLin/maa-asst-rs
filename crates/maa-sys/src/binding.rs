@@ -8,8 +8,10 @@ include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 #[cfg(test)]
 mod tests {
+    use std::ffi::CStr;
+    use std::path::Path;
+
     use crate::binding::MaaCore;
-    use std::{ffi::CStr, path::Path};
 
     fn get_test_lib() -> MaaCore {
         let path = Path::new(env!("MAA_LIB_PATH")).join(
@@ -18,7 +20,7 @@ mod tests {
             #[cfg(target_os = "windows")]
             "MaaCore.dll",
             #[cfg(target_os = "linux")]
-            "libMaaCore.so",
+            "libMaaCore.so"
         );
         unsafe { MaaCore::new(path).unwrap() }
     }

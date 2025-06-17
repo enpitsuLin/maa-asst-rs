@@ -7,7 +7,7 @@ pub enum MAAIcons {
     Bot,
     Tools,
     Settings,
-    Bell,
+    Bell
 }
 
 impl From<MAAIcons> for Icon {
@@ -18,7 +18,7 @@ impl From<MAAIcons> for Icon {
             MAAIcons::Bot => Icon::default().path("icons/bot.svg"),
             MAAIcons::Tools => Icon::default().path("icons/tools.svg"),
             MAAIcons::Settings => Icon::default().path("icons/settings.svg"),
-            MAAIcons::Bell => Icon::default().path("icons/bell.svg"),
+            MAAIcons::Bell => Icon::default().path("icons/bell.svg")
         }
     }
 }

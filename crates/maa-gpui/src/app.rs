@@ -1,20 +1,18 @@
+use std::fs;
+use std::sync::Arc;
+
 use directories::ProjectDirs;
 use gpui::{
     actions, px, size, AnyView, App, AppContext, Application, Bounds, KeyBinding, Window, WindowBounds,
-    WindowKind, WindowOptions,
+    WindowKind, WindowOptions
 };
 use gpui_component::{Root, TitleBar};
-use std::{fs, sync::Arc};
 use tracing::{debug, info};
 
-use crate::{
-    assets::Assets,
-    root::MAARoot,
-    states::{
-        app::{AppState, AppStateTrait},
-        settings::Settings,
-    },
-};
+use crate::assets::Assets;
+use crate::root::MAARoot;
+use crate::states::app::{AppState, AppStateTrait};
+use crate::states::settings::Settings;
 
 actions!(maa_actions, [Quit, Hide]);
 
@@ -58,7 +56,7 @@ pub async fn setup() {
         MAAWindow::windows_async_init(
             options,
             app,
-            crate::ui::components::router_test::RouterTestView::view,
+            crate::ui::components::router_test::RouterTestView::view
         );
     });
 }
@@ -69,7 +67,7 @@ impl MAAWindow {
     fn windows_async_init<F, E>(options: WindowOptions, cx: &mut App, crate_view_fn: F)
     where
         E: Into<AnyView>,
-        F: FnOnce(&mut Window, &mut App) -> E + Send + 'static,
+        F: FnOnce(&mut Window, &mut App) -> E + Send + 'static
     {
         let title = cx.app_title();
 
@@ -98,7 +96,7 @@ impl MAAWindow {
     fn shortcut_binding_init(cx: &mut App) {
         cx.bind_keys([
             KeyBinding::new("cmd-q", Quit, None),
-            KeyBinding::new("cmd-w", Hide, None),
+            KeyBinding::new("cmd-w", Hide, None)
         ]);
         cx.on_action(|_: &Quit, cx: &mut App| {
             cx.quit();
@@ -125,7 +123,7 @@ impl MAAWindow {
             titlebar: Some(TitleBar::title_bar_options()),
             window_min_size: Some(gpui::Size {
                 width: px(860.),
-                height: px(640.),
+                height: px(640.)
             }),
             kind: WindowKind::Normal,
             #[cfg(target_os = "linux")]

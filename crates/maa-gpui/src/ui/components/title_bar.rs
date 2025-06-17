@@ -1,14 +1,14 @@
+use gpui::prelude::FluentBuilder;
 use gpui::{
-    div, prelude::FluentBuilder, ClickEvent, Context, InteractiveElement, IntoElement, MouseButton,
-    ParentElement, Render, Styled, Window,
+    div, ClickEvent, Context, InteractiveElement, IntoElement, MouseButton, ParentElement, Render, Styled,
+    Window
 };
-use gpui_component::{
-    badge::Badge,
-    button::{Button, ButtonVariants},
-    ActiveTheme, ContextModal, IconName, Sizable, Theme, ThemeMode, TitleBar,
-};
+use gpui_component::badge::Badge;
+use gpui_component::button::{Button, ButtonVariants};
+use gpui_component::{ActiveTheme, ContextModal, IconName, Sizable, Theme, ThemeMode, TitleBar};
 
-use crate::{states::app::AppStateTrait, ui::components::icon::MAAIcons};
+use crate::states::app::AppStateTrait;
+use crate::ui::components::icon::MAAIcons;
 
 pub struct AppTitleBar {}
 
@@ -20,7 +20,7 @@ impl AppTitleBar {
     fn change_color_mode(&mut self, _: &ClickEvent, window: &mut Window, cx: &mut Context<Self>) {
         let mode = match cx.theme().mode.is_dark() {
             true => ThemeMode::Light,
-            false => ThemeMode::Dark,
+            false => ThemeMode::Dark
         };
 
         Theme::change(mode, None, cx);
@@ -56,25 +56,22 @@ impl Render for AppTitleBar {
                             })
                             .small()
                             .ghost()
-                            .on_click(cx.listener(Self::change_color_mode)),
+                            .on_click(cx.listener(Self::change_color_mode))
                     )
                     .child(
                         Button::new("github")
                             .icon(IconName::GitHub)
                             .small()
                             .ghost()
-                            .on_click(|_, _, cx| cx.open_url("https://github.com/longbridge/gpui-component")),
+                            .on_click(|_, _, cx| cx.open_url("https://github.com/longbridge/gpui-component"))
                     )
                     .child(
                         div().relative().child(
-                            Badge::new().count(notifications_count).max(99).child(
-                                Button::new("bell")
-                                    .small()
-                                    .ghost()
-                                    .compact()
-                                    .icon(MAAIcons::Bell),
-                            ),
-                        ),
+                            Badge::new()
+                                .count(notifications_count)
+                                .max(99)
+                                .child(Button::new("bell").small().ghost().compact().icon(MAAIcons::Bell))
+                        )
                     )
                     .child(
                         Button::new("test")
@@ -83,8 +80,8 @@ impl Render for AppTitleBar {
                             .ghost()
                             .on_click(cx.listener(|_, _, _, cx| {
                                 cx.update_title("test title");
-                            })),
-                    ),
+                            }))
+                    )
             )
     }
 }

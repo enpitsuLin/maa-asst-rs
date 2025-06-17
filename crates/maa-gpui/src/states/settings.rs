@@ -1,12 +1,14 @@
+use std::fs::File;
+use std::path::PathBuf;
+
 use gpui::{App, BorrowAppContext, EventEmitter, Global};
 use serde::{Deserialize, Serialize};
-use std::{fs::File, path::PathBuf};
 use tracing::warn;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Settings {
     #[serde(default)]
-    pub adb_path: Option<String>,
+    pub adb_path: Option<String>
 }
 
 impl EventEmitter<String> for Settings {}

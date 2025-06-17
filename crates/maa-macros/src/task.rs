@@ -1,6 +1,7 @@
-use crate::utils::{get_doc_attrs, get_inner_type, is_option_type, is_string_type};
 use quote::{format_ident, quote};
 use syn::{Data, DeriveInput, Error, Fields};
+
+use crate::utils::{get_doc_attrs, get_inner_type, is_option_type, is_string_type};
 
 pub fn generate_task(input: DeriveInput) -> Result<proc_macro2::TokenStream, Error> {
     let name = &input.ident;
@@ -44,7 +45,7 @@ pub fn generate_task(input: DeriveInput) -> Result<proc_macro2::TokenStream, Err
             },
             _ => {
                 return Err(Error::new_spanned(nested, "task 属性只支持 name 和 type 参数"));
-            },
+            }
         }
     }
 
@@ -55,9 +56,9 @@ pub fn generate_task(input: DeriveInput) -> Result<proc_macro2::TokenStream, Err
     let fields = match &input.data {
         Data::Struct(data) => match &data.fields {
             Fields::Named(fields) => &fields.named,
-            _ => return Err(Error::new_spanned(&input, "MAATask 只支持命名字段的结构体")),
+            _ => return Err(Error::new_spanned(&input, "MAATask 只支持命名字段的结构体"))
         },
-        _ => return Err(Error::new_spanned(&input, "MAATask 只支持结构体")),
+        _ => return Err(Error::new_spanned(&input, "MAATask 只支持结构体"))
     };
 
     // 生成 builder 字段（与结构体字段相同，但必选字段使用 Option 包装）
@@ -100,22 +101,20 @@ pub fn generate_task(input: DeriveInput) -> Result<proc_macro2::TokenStream, Err
                     }
                 }
             }
-        } else {
-            if is_string_type(ty) {
-                quote! {
-                    #(#doc)*
-                    pub fn #name(mut self, #name: impl Into<String>) -> Self {
-                        self.#name = Some(#name.into());
-                        self
-                    }
+        } else if is_string_type(ty) {
+            quote! {
+                #(#doc)*
+                pub fn #name(mut self, #name: impl Into<String>) -> Self {
+                    self.#name = Some(#name.into());
+                    self
                 }
-            } else {
-                quote! {
-                    #(#doc)*
-                    pub fn #name(mut self, #name: #ty) -> Self {
-                        self.#name = Some(#name);
-                        self
-                    }
+            }
+        } else {
+            quote! {
+                #(#doc)*
+                pub fn #name(mut self, #name: #ty) -> Self {
+                    self.#name = Some(#name);
+                    self
                 }
             }
         }

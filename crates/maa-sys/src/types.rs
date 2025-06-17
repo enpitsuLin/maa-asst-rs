@@ -31,8 +31,7 @@ pub enum Error {
     #[error("内容太大")]
     ContentTooLarge(usize),
     #[error("未知错误")]
-    Unknown,
-    
+    Unknown
 }
 
 #[repr(u8)]
@@ -43,7 +42,7 @@ pub enum StaticOptionKey {
     /// 用CPU进行OCR
     CpuOCR,
     /// 用GPU进行OCR
-    GpuOCR,
+    GpuOCR
 }
 
 #[repr(u8)]
@@ -64,5 +63,5 @@ pub enum InstanceOptionKey {
     /// 是否使用 AdbLite， "0" | "1"
     AdbLiteEnabled = 4,
     /// 退出时是否杀掉 Adb 进程， "0" | "1"
-    KillAdbOnExit = 5,
+    KillAdbOnExit = 5
 }

@@ -1,5 +1,4 @@
 use hashbrown::HashMap;
-
 use maa_macros::GenerateTask;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -62,7 +61,7 @@ pub struct StartUpTask {
     /// 使用登录名进行查找，保证输入内容在所有已登录账号唯一即可：
     /// - 官服：123****4567，可输入 123****4567、4567、123、3****4567
     /// - B服：张三，可输入 张三、张、三
-    pub account_name: Option<String>,
+    pub account_name: Option<String>
 }
 
 /// 关闭游戏任务的参数
@@ -97,7 +96,7 @@ pub struct CloseDownTask {
     /// - "YoStarEN" - 国际服
     /// - "YoStarJP" - 日服
     /// - "YoStarKR" - 韩服
-    pub client_type: Option<String>,
+    pub client_type: Option<String>
 }
 
 /// 刷理智任务的参数
@@ -164,7 +163,7 @@ pub struct FightTask {
     /// 客户端版本
     pub client_type: Option<String>,
     /// 节省理智碎石模式，默认为 `false`
-    pub dr_grandet: Option<bool>,
+    pub dr_grandet: Option<bool>
 }
 
 /// 公开招募任务的参数
@@ -237,7 +236,7 @@ pub struct RecruitTask {
     /// 一图流汇报 id
     pub yituliu_id: Option<String>,
     /// 服务器，默认为 "CN"
-    pub server: Option<String>,
+    pub server: Option<String>
 }
 
 // Start Generation Here
@@ -302,7 +301,7 @@ pub struct InfrastTask {
     /// 自定义配置路径，必选。不支持运行中设置
     pub filename: Option<String>,
     /// 使用配置中的方案序号，必选。不支持运行中设置
-    pub plan_index: Option<i32>,
+    pub plan_index: Option<i32>
 }
 
 /// 商店任务的参数
@@ -345,7 +344,7 @@ pub struct MallTask {
     /// 是否只购买折扣物品，只作用于第二轮购买，默认为 `false`
     pub only_buy_discount: Option<bool>,
     /// 是否在信用点低于300时停止购买，只作用于第二轮购买，默认为 `false`
-    pub reserve_max_credit: Option<bool>,
+    pub reserve_max_credit: Option<bool>
 }
 
 /// 奖励领取任务的参数
@@ -388,7 +387,7 @@ pub struct AwardTask {
     /// 领取限时开采许可的合成玉奖励，默认为 `false`
     pub mining: Option<bool>,
     /// 领取五周年赠送的月卡奖励，默认为 `false`
-    pub specialaccess: Option<bool>,
+    pub specialaccess: Option<bool>
 }
 
 /// 肉鸽任务的参数
@@ -510,7 +509,7 @@ pub struct RoguelikeTask {
     /// 烧水期望奖励，默认全 `false`
     pub collectible_mode_start_list: Option<HashMap<String, bool>>,
     /// 使用种子刷钱，`true` 时有效
-    pub start_with_seed: Option<bool>,
+    pub start_with_seed: Option<bool>
 }
 
 /// 自动抄作业任务的参数
@@ -541,7 +540,7 @@ pub struct CopilotTask {
     /// 作业 JSON 的文件路径，绝对、相对路径均可。不支持运行期设置
     pub filename: Option<String>,
     /// 是否进行"快捷编队"，默认为 `false`。不支持运行期设置
-    pub formation: Option<bool>,
+    pub formation: Option<bool>
 }
 
 /// 自动抄保全作业任务的参数
@@ -572,7 +571,7 @@ pub struct SSSCopilotTask {
     /// 作业 JSON 的文件路径，绝对、相对路径均可。不支持运行期设置
     pub filename: Option<String>,
     /// 循环执行次数
-    pub loop_times: Option<i32>,
+    pub loop_times: Option<i32>
 }
 
 /// 仓库识别任务的参数
@@ -595,7 +594,7 @@ pub struct SSSCopilotTask {
 #[task(name = "仓库识别", task_type = "Depot")]
 pub struct DepotTask {
     /// 是否启用本任务，默认为 `true`
-    pub enable: Option<bool>,
+    pub enable: Option<bool>
 }
 
 /// 干员 box 识别任务的参数
@@ -618,7 +617,7 @@ pub struct DepotTask {
 #[task(name = "干员 box 识别", task_type = "OperBox")]
 pub struct OperBoxTask {
     /// 是否启用本任务，默认为 `true`
-    pub enable: Option<bool>,
+    pub enable: Option<bool>
 }
 
 /// 生息演算任务的参数
@@ -678,7 +677,7 @@ pub struct ReclamationTask {
     /// - `1` - 长按
     pub increment_mode: Option<i32>,
     /// 单次最大制造轮数，默认为 `16`
-    pub num_craft_batches: Option<i32>,
+    pub num_craft_batches: Option<i32>
 }
 
 /// 自定义任务的参数
@@ -707,7 +706,7 @@ pub struct CustomTask {
     pub enable: bool,
     /// 执行数组中第一个匹配上的任务（及后续 next 等）
     /// 若想执行多个任务，可多次 append Custom task
-    pub task_names: Vec<String>,
+    pub task_names: Vec<String>
 }
 
 /// 单步任务的参数
@@ -755,7 +754,7 @@ pub struct SingleStepTask {
     /// - "action": 单步作战操作，details 需为作战协议中的单个 action
     pub subtask: String,
     /// 任务详情，根据子任务类型不同而变化
-    pub details: HashMap<String, serde_json::Value>,
+    pub details: HashMap<String, serde_json::Value>
 }
 
 /// 视频识别任务的参数
@@ -782,7 +781,7 @@ pub struct VideoRecognitionTask {
     /// 是否启用本任务，必选
     pub enable: bool,
     /// 视频的文件路径，绝对、相对路径均可。不支持运行期设置
-    pub filename: String,
+    pub filename: String
 }
 
 #[cfg(test)]

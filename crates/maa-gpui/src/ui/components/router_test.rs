@@ -1,5 +1,5 @@
-use gpui::{div, App, Context, Window};
-use gpui::{prelude::*, Entity};
+use gpui::prelude::*;
+use gpui::{div, App, Context, Entity, Window};
 use gpui_router::{IntoLayout, Outlet, Route, Routes};
 
 use crate::ui::layouts::default::DefaultLayout;
@@ -35,27 +35,27 @@ impl Render for RouterTestView {
                             .child(
                                 Route::new()
                                     .path("video_recognition")
-                                    .element(view("VideoRecognition")),
+                                    .element(view("VideoRecognition"))
                             )
                             .child(Route::new().path("gacha").element(view("Gacha")))
-                            .child(Route::new().path("peep").element(view("Peep"))),
+                            .child(Route::new().path("peep").element(view("Peep")))
                     )
                     .child(Route::new().path("settings").element(view("Settings")))
-                    .child(Route::new().path("{*not_match}").element(view("NotMatch"))),
-            ),
+                    .child(Route::new().path("{*not_match}").element(view("NotMatch")))
+            )
         )
     }
 }
 
 #[derive(IntoElement, IntoLayout)]
 pub struct SettingLayout {
-    outlet: Outlet,
+    outlet: Outlet
 }
 
 impl SettingLayout {
     pub fn new() -> Self {
         Self {
-            outlet: Outlet::new(),
+            outlet: Outlet::new()
         }
     }
 }

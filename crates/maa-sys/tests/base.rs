@@ -27,7 +27,7 @@ fn test_get_tasks_list() {
                 .client_type("Official")
                 .start_game_enabled(true)
                 .account_name("123****4567")
-                .build(),
+                .build()
         )
         .unwrap();
 
@@ -64,7 +64,7 @@ fn test_connect_device() {
                 .enable(true)
                 .client_type("Official")
                 .start_game_enabled(true)
-                .build(),
+                .build()
         )
         .unwrap();
 

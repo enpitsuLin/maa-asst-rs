@@ -1,15 +1,14 @@
-use crate::{types::*, Connection};
-use hashbrown::HashMap;
 use std::env::consts::OS;
 use std::ffi::{CStr, CString};
 use std::path::Path;
 use std::ptr::NonNull;
 use std::sync::Arc;
 
-use crate::{
-    binding,
-    protocol::{message, task},
-};
+use hashbrown::HashMap;
+
+use crate::protocol::{message, task};
+use crate::types::*;
+use crate::{binding, Connection};
 
 // 一张 720p 图像，24位色深，原始大小为 1280 * 720 * 3（2.7 MB）
 // 压缩后的图像数据应小于原始大小。
@@ -28,7 +27,7 @@ pub struct Assistant {
     /// 存储所有已添加的任务，键为任务ID
     tasks: HashMap<i32, Box<dyn task::Task>>,
     /// MAA核心库实例
-    core: Arc<binding::MaaCore>,
+    core: Arc<binding::MaaCore>
 }
 
 /// 将Rust的回调函数转换为C的回调函数
@@ -40,7 +39,7 @@ pub struct Assistant {
 pub unsafe extern "C" fn callback_wrapper(
     msg_id: i32,
     details_json: *const ::std::os::raw::c_char,
-    user_data: *mut ::std::os::raw::c_void,
+    user_data: *mut ::std::os::raw::c_void
 ) {
     let json_str = std::ffi::CStr::from_ptr(details_json).to_str().unwrap();
     let details: serde_json::Value = serde_json::from_str(json_str).unwrap();
@@ -63,7 +62,7 @@ impl Assistant {
             "macos" => "libMaaCore.dylib",
             "windows" => "MaaCore.dll",
             "linux" => "libMaaCore.so",
-            _ => return Err(Error::LibraryLoadFailed),
+            _ => return Err(Error::LibraryLoadFailed)
         });
         let lib = unsafe { binding::MaaCore::new(dylib_path).map_err(|_| Error::LibraryLoadFailed)? };
         Ok(Arc::new(lib))
@@ -102,7 +101,7 @@ impl Assistant {
     pub fn set_instance_option(
         &mut self,
         key: InstanceOptionKey,
-        value: impl Into<String>,
+        value: impl Into<String>
     ) -> Result<(), Error> {
         let value_str = CString::new(value.into()).unwrap();
         let ret = unsafe {
@@ -155,7 +154,7 @@ impl Assistant {
                 handle,
                 target: None,
                 tasks: HashMap::new(),
-                core,
+                core
             })
             .ok_or(Error::CreateFailed)
     }
@@ -172,10 +171,10 @@ impl Assistant {
     /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
     pub fn new_with_callback<
         P: AsRef<Path>,
-        F: FnMut(message::Message, serde_json::Value) + Send + 'static,
+        F: FnMut(message::Message, serde_json::Value) + Send + 'static
     >(
         path: P,
-        callback: F,
+        callback: F
     ) -> Result<Self, Error> {
         let core = Self::load_library(path.as_ref())?;
         Self::load_resource(path, &core)?;
@@ -190,7 +189,7 @@ impl Assistant {
                 handle,
                 target: None,
                 tasks: HashMap::new(),
-                core,
+                core
             })
             .ok_or(Error::CreateFailed)
     }
@@ -216,7 +215,7 @@ impl Assistant {
                 adb_path.as_ptr(),
                 address_cstr.as_ptr(),
                 config_str.as_ref().map_or(std::ptr::null(), |cs| cs.as_ptr()),
-                1,
+                1
             )
         };
         if ret != 0 {
@@ -354,7 +353,7 @@ impl Assistant {
                 asst_get_image(
                     self.handle.as_ptr(),
                     buf as *mut std::os::raw::c_void,
-                    size as binding::AsstSize,
+                    size as binding::AsstSize
                 )
             };
 
@@ -384,7 +383,7 @@ impl Assistant {
                     // Double the buffer size if it's not enough
                     buf_size *= 2;
                     buf.reserve(buf_size);
-                },
+                }
             }
         }
     }
@@ -431,7 +430,7 @@ impl Assistant {
                     asst_get_uuid(
                         self.handle.as_ptr(),
                         buff.as_mut_ptr() as *mut i8,
-                        buff_size as u64,
+                        buff_size as u64
                     )
                 };
                 if data_size == self.get_null_size()? {

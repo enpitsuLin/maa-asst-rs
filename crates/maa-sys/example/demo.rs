@@ -1,6 +1,7 @@
+use std::env;
+
 use maa_sys::task::{FightTask, StartUpTask};
 use maa_sys::{Assistant, Connection, InstanceOptionKey};
-use std::env;
 
 fn pause() {
     println!("按任意键继续...");
@@ -29,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .client_type("Official")
             .start_game_enabled(true)
             .account_name("123****4567")
-            .build(),
+            .build()
     )?;
 
     assistant.append_task(
@@ -38,7 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .stage("1-7")
             .medicine(3)
             .times(5)
-            .build(),
+            .build()
     )?;
 
     assistant.start()?;

@@ -1,7 +1,10 @@
 #![windows_subsystem = "windows"]
 
 use tracing::{info, Level};
-use tracing_subscriber::{filter::Targets, fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+use tracing_subscriber::filter::Targets;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::{fmt, EnvFilter};
 
 mod app;
 mod assets;

@@ -22,6 +22,6 @@ fn main() {
                 .manifest_required()
                 .unwrap();
         },
-        _ => (),
+        _ => ()
     };
 }

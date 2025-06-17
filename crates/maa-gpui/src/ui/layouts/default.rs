@@ -1,10 +1,10 @@
-use gpui::{div, impl_internal_actions, relative, white, App, SharedString, Window};
-use gpui::{prelude::*, ElementId};
+use gpui::prelude::*;
+use gpui::{div, impl_internal_actions, relative, white, App, ElementId, SharedString, Window};
 use gpui_component::breadcrumb::{Breadcrumb, BreadcrumbItem};
 use gpui_component::divider::Divider;
 use gpui_component::popup_menu::PopupMenuExt;
 use gpui_component::sidebar::{
-    Sidebar, SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarToggleButton,
+    Sidebar, SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarToggleButton
 };
 use gpui_component::{blue_500, h_flex, v_flex, ActiveTheme, Icon, IconName};
 use gpui_router::{use_location, use_navigate, IntoLayout, Outlet};
@@ -20,13 +20,13 @@ impl_internal_actions!(sidebar_story, [SelectCompany]);
 
 #[derive(IntoElement, IntoLayout)]
 pub struct DefaultLayout {
-    outlet: Outlet,
+    outlet: Outlet
 }
 
 impl DefaultLayout {
     pub fn new() -> Self {
         Self {
-            outlet: Outlet::new(),
+            outlet: Outlet::new()
         }
     }
 
@@ -63,7 +63,7 @@ impl DefaultLayout {
                                     .bg(cx.theme().transparent)
                                     .text_color(cx.theme().foreground)
                                     .child(Icon::new(IconName::GalleryVerticalEnd))
-                            }),
+                            })
                     )
                     .when(!cx.sidebar_collapsed(), |this| {
                         this.child(
@@ -75,7 +75,7 @@ impl DefaultLayout {
                                 .overflow_hidden()
                                 .text_ellipsis()
                                 .child("Company Name")
-                                .child(div().child("Enterprise").text_xs()),
+                                .child(div().child("Enterprise").text_xs())
                         )
                     })
                     .when(!cx.sidebar_collapsed(), |this| {
@@ -84,17 +84,17 @@ impl DefaultLayout {
                     .popup_menu(|menu, _, _| {
                         menu.menu(
                             "Twitter Inc.",
-                            Box::new(SelectCompany(SharedString::from("twitter"))),
+                            Box::new(SelectCompany(SharedString::from("twitter")))
                         )
                         .menu(
                             "Meta Platforms",
-                            Box::new(SelectCompany(SharedString::from("meta"))),
+                            Box::new(SelectCompany(SharedString::from("meta")))
                         )
                         .menu(
                             "Google Inc.",
-                            Box::new(SelectCompany(SharedString::from("google"))),
+                            Box::new(SelectCompany(SharedString::from("google")))
                         )
-                    }),
+                    })
             )
             .child(
                 SidebarGroup::new("开始").child(
@@ -116,9 +116,9 @@ impl DefaultLayout {
                             .icon(MAAIcons::Bot)
                             .on_click(|_e, _window, cx| {
                                 Self::navigate(cx, "/copilot");
-                            }),
-                    ]),
-                ),
+                            })
+                    ])
+                )
             )
             .child(
                 SidebarGroup::new("平台").child(
@@ -166,9 +166,9 @@ impl DefaultLayout {
                             .icon(MAAIcons::Settings)
                             .on_click(|_e, _window, cx| {
                                 Self::navigate(cx, "/settings");
-                            }),
-                    ]),
-                ),
+                            })
+                    ])
+                )
             )
             .footer(
                 SidebarFooter::new()
@@ -177,11 +177,11 @@ impl DefaultLayout {
                         h_flex()
                             .gap_2()
                             .child(IconName::CircleUser)
-                            .when(!cx.sidebar_collapsed(), |this| this.child("Jason Lee")),
+                            .when(!cx.sidebar_collapsed(), |this| this.child("Jason Lee"))
                     )
                     .when(!cx.sidebar_collapsed(), |this| {
                         this.child(Icon::new(IconName::ChevronsUpDown).size_4())
-                    }),
+                    })
             )
     }
 
@@ -200,7 +200,7 @@ impl DefaultLayout {
                 path.iter().enumerate().fold(this, |breadcrumb, (index, item)| {
                     breadcrumb.item(BreadcrumbItem::new(
                         ElementId::Integer(index as u64),
-                        item.to_string(),
+                        item.to_string()
                     ))
                 })
             })
@@ -227,12 +227,12 @@ impl RenderOnce for DefaultLayout {
                                     .collapsed(cx.sidebar_collapsed())
                                     .on_click(|_e, _window, cx| {
                                         cx.toggle_sidebar();
-                                    }),
+                                    })
                             )
                             .child(Divider::vertical().h_4())
-                            .child(self.render_breadcrumb(cx)),
+                            .child(self.render_breadcrumb(cx))
                     )
-                    .child(self.outlet),
+                    .child(self.outlet)
             )
     }
 }

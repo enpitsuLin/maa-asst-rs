@@ -22,7 +22,7 @@ pub enum Message {
     SubTaskStart = 20001,     // 原子任务开始
     SubTaskCompleted = 20002, // 原子任务完成
     SubTaskExtraInfo = 20003, // 原子任务额外信息
-    SubTaskStopped = 20004,   // 原子任务手动停止
+    SubTaskStopped = 20004    // 原子任务手动停止
 }
 
 impl Display for Message {
@@ -36,13 +36,13 @@ impl Display for Message {
 /// 因为 Rust 会对零大小的分配优化，直接使用 Rust 的函数类型会导致分配失败，指针永远只能得到 `0x1`
 /// 所以需要使用一个非空结构体来包装回调函数
 pub struct Processor {
-    pub callback: Box<dyn FnMut(Message, serde_json::Value) + Send>,
+    pub callback: Box<dyn FnMut(Message, serde_json::Value) + Send>
 }
 
 impl Processor {
     pub fn from(callback: impl FnMut(Message, serde_json::Value) + Send + 'static) -> Self {
         Self {
-            callback: Box::new(callback),
+            callback: Box::new(callback)
         }
     }
 }
@@ -66,7 +66,7 @@ impl From<i32> for Message {
             20002 => Message::SubTaskCompleted,
             20003 => Message::SubTaskExtraInfo,
             20004 => Message::SubTaskStopped,
-            _ => Message::InternalError, // 对于未知的消息ID，返回内部错误
+            _ => Message::InternalError // 对于未知的消息ID，返回内部错误
         }
     }
 }

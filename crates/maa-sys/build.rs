@@ -1,7 +1,8 @@
 //! # Build script
 //!
 
-use std::{env, path::PathBuf};
+use std::env;
+use std::path::PathBuf;
 extern crate bindgen;
 
 fn main() {

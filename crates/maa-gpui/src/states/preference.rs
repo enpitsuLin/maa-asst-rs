@@ -6,5 +6,5 @@ pub struct Preference {
     #[serde(default)]
     pub font_size: usize,
     pub theme_color: Option<Hsla>,
-    pub locale: Option<String>,
+    pub locale: Option<String>
 }
