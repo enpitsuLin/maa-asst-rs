@@ -7,3 +7,4 @@ edition = "2024"
 directories = "6.0.0"
 anyhow.workspace = true
 tracing.workspace = true
+maa-sys.workspace = true

@@ -1,5 +1,7 @@
 use assets::Assets;
 use global::constants::{APP_ID, APP_NAME};
+use global::paths::project_dir;
+use global::shared_state;
 #[cfg(target_os = "macos")]
 use gpui::KeyBinding;
 use gpui::{
@@ -9,6 +11,7 @@ use gpui::{
 use gpui::{point, SharedString, TitlebarOptions};
 use gpui_component::button::{Button, ButtonVariants};
 use gpui_component::{ActiveTheme, IconName, Root, Sizable, Theme, ThemeMode, TitleBar};
+use maa_sys::Assistant;
 use reqwest_client::ReqwestClient;
 use settings::AppSettings;
 use std::sync::Arc;
@@ -109,6 +112,34 @@ impl Render for HelloWorld {
                                         cx.notify();
                                     });
                                     tracing::info!("Test button clicked");
+                                })),
+                        )
+                        .child(
+                            Button::new("test-2")
+                                .label("Init assistant")
+                                .tooltip("Init assistant")
+                                .on_click(cx.listener(|_this, _, _window, _| {
+                                    tracing::info!("Test button clicked");
+                                    let lib_dir = project_dir().data_dir().join("libraray");
+                                    let resource_dir = project_dir().data_dir();
+                                    shared_state().set_assistant(
+                                        Assistant::registry()
+                                            .with_library(&lib_dir)
+                                            .with_resource(&resource_dir)
+                                            .init()
+                                            .unwrap(),
+                                    );
+                                })),
+                        )
+                        .child(
+                            Button::new("test-3")
+                                .label("Get assistant")
+                                .tooltip("Get assistant")
+                                .on_click(cx.listener(|_this, _, _window, _| {
+                                    tracing::info!("Test button clicked");
+                                    shared_state().with_assistant(|assistant| {
+                                        tracing::info!("Assistant: {:?}", assistant.version());
+                                    });
                                 })),
                         ),
                 ),

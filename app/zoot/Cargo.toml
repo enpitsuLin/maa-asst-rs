@@ -13,6 +13,8 @@ name = "ZOOT"
 path = "src/main.rs"
 
 [dependencies]
+maa-sys.workspace = true
+
 settings = { path = "../settings" }
 global = { path = "../global" }
 gpui.workspace = true

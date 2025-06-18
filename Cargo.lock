@@ -2514,6 +2514,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "directories",
+ "maa-sys",
  "tracing",
 ]
 
@@ -9262,6 +9263,7 @@ dependencies = [
  "global",
  "gpui",
  "gpui-component",
+ "maa-sys",
  "reqwest_client",
  "rust-embed",
  "serde",
