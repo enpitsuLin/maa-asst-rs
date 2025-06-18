@@ -1,6 +1,7 @@
 use tracing::Level;
 use tracing_appender::non_blocking::WorkerGuard;
-use tracing_appender::{non_blocking, rolling};
+use tracing_appender::rolling::Rotation;
+use tracing_appender::{non_blocking, rolling::RollingFileAppender};
 use tracing_subscriber::filter::Targets;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::prelude::*;
@@ -21,7 +22,14 @@ pub fn init_logger() -> WorkerGuard {
         }
     });
 
-    let file_appender = rolling::hourly(project_dir().data_dir().join("logs"), "log");
+    let file_appender = RollingFileAppender::builder()
+        .rotation(Rotation::DAILY)
+        .max_log_files(2)
+        .filename_prefix("zoot")
+        .filename_suffix("log")
+        .build(project_dir().data_dir().join("logs"))
+        .expect("initializing rolling file appender failed");
+
     let (non_blocking_appender, guard) = non_blocking(file_appender);
 
     let file_layer = tracing_subscriber::fmt::layer()

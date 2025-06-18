@@ -182,6 +182,8 @@ fn main() {
 
         // Open a window with default options
         cx.open_window(opts, |window, cx| {
+            tracing::info!("Starting application...");
+
             // Automatically sync theme with system appearance
             window
                 .observe_window_appearance(|window, cx| {
