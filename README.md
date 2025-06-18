@@ -17,6 +17,7 @@
 │   ├─── auto_update # 自动更新相关
 │   ├─── global      # 全局常量和一些状态管理
 │   ├─── settings    # 设置相关
+|   ├─── installer   # MAA 资源下载相关
 │   ├─── zoot        # ZOOT MAA 助手主程序包
 ├─── crates/*        # MAA 的 rust 绑定相关库
 ├─── xtask           # 构建和发布相关的 xtask 任务
