@@ -11,7 +11,7 @@ fn pause() {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let resource_path = env!("MAA_RESOURCE_PATH");
-    let mut assistant = Assistant::new(resource_path)?;
+    let mut assistant = Assistant::init(resource_path)?;
 
     // 未 Root 的设备使用 adb 模式
     assistant.set_instance_option(InstanceOptionKey::TouchMode, "adb")?;

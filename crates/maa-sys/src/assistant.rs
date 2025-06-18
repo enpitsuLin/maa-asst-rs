@@ -17,6 +17,75 @@ const INIT_SIZE: usize = 1024 * 1024 * 4;
 // 32MB 应该足够用于 4K 原始图像，但实际使用中可能不需要这么大
 const MAX_SIZE: usize = 1024 * 1024 * 32;
 
+/// Assistant 构建器，用于分离 library 和 resource 的加载
+pub struct AssistantBuilder {
+    library_path: Option<String>,
+    resource_path: Option<String>,
+    callback: Option<Box<dyn FnMut(message::Message, serde_json::Value) + Send + 'static>>,
+}
+
+impl AssistantBuilder {
+    /// 创建新的构建器实例
+    pub fn new() -> Self {
+        Self {
+            library_path: None,
+            resource_path: None,
+            callback: None,
+        }
+    }
+
+    /// 设置 library 加载路径
+    pub fn with_library<P: AsRef<Path>>(mut self, path: P) -> Self {
+        self.library_path = Some(path.as_ref().to_string_lossy().to_string());
+        self
+    }
+
+    /// 设置 resource 加载路径
+    pub fn with_resource<P: AsRef<Path>>(mut self, path: P) -> Self {
+        self.resource_path = Some(path.as_ref().to_string_lossy().to_string());
+        self
+    }
+
+    /// 设置回调函数
+    pub fn with_callback<F>(mut self, callback: F) -> Self
+    where
+        F: FnMut(message::Message, serde_json::Value) + Send + 'static
+    {
+        self.callback = Some(Box::new(callback));
+        self
+    }
+
+    /// 初始化 Assistant 实例
+    pub fn init(self) -> Result<Assistant, Error> {
+        let library_path = self.library_path.ok_or(Error::LibraryLoadFailed)?;
+        let resource_path = self.resource_path.ok_or(Error::ResourceLoadFailed)?;
+
+        // 加载 library
+        let core = Assistant::load_library(&library_path)?;
+        
+        // 加载 resource
+        Assistant::load_resource(&resource_path, &core)?;
+
+        // 创建 Assistant 实例
+        let handle = if let Some(callback) = self.callback {
+            let processor = message::Processor::from(callback);
+            let processor_ptr = Box::into_raw(Box::new(processor));
+            unsafe { core.AsstCreateEx(Some(callback_wrapper), processor_ptr as *mut _) }
+        } else {
+            unsafe { core.AsstCreate() }
+        };
+
+        NonNull::new(handle)
+            .map(|handle| Assistant {
+                handle,
+                target: None,
+                tasks: HashMap::new(),
+                core
+            })
+            .ok_or(Error::CreateFailed)
+    }
+}
+
 /// MAA助手的主要结构体
 /// 负责管理与设备的连接、任务执行和资源控制
 pub struct Assistant {
@@ -57,7 +126,7 @@ impl Assistant {
     /// # Returns
     /// * `Ok(Arc<binding::MaaCore>)` - 加载成功
     /// * `Err(Error::LibraryLoadFailed)` - 加载失败
-    fn load_library<P: AsRef<Path>>(path: P) -> Result<Arc<binding::MaaCore>, Error> {
+    pub fn load_library<P: AsRef<Path>>(path: P) -> Result<Arc<binding::MaaCore>, Error> {
         let dylib_path = path.as_ref().join(match OS {
             "macos" => "libMaaCore.dylib",
             "windows" => "MaaCore.dll",
@@ -77,7 +146,7 @@ impl Assistant {
     /// # Returns
     /// * `Ok(())` - 资源加载成功
     /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
-    fn load_resource<P: AsRef<Path>>(path: P, core: &binding::MaaCore) -> Result<(), Error> {
+    pub fn load_resource<P: AsRef<Path>>(path: P, core: &binding::MaaCore) -> Result<(), Error> {
         let path = path.as_ref();
         let resource_path = CString::new(path.to_string_lossy().as_ref()).unwrap();
         let ret = unsafe { core.AsstLoadResource(resource_path.as_ptr()) };
@@ -87,6 +156,62 @@ impl Assistant {
         } else {
             Err(Error::ResourceLoadFailed)
         }
+    }
+
+    /// 创建 Assistant 构建器
+    ///
+    /// # Returns
+    /// * `AssistantBuilder` - 构建器实例
+    ///
+    /// # Example
+    /// ```rust
+    /// let assistant = Assistant::registry()
+    ///     .with_library("/path/to/library")
+    ///     .with_resource("/path/to/resource")
+    ///     .init()?;
+    /// ```
+    pub fn registry() -> AssistantBuilder {
+        AssistantBuilder::new()
+    }
+
+    /// 创建一个新的Assistant实例（向后兼容）
+    ///
+    /// # Arguments
+    /// * `path` - 同时包含库文件和资源文件的路径
+    ///
+    /// # Returns
+    /// * `Ok(Assistant)` - 创建成功
+    /// * `Err(Error::CreateFailed)` - 创建失败
+    /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
+    pub fn init<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
+        Self::registry()
+            .with_library(path.as_ref())
+            .with_resource(path.as_ref())
+            .init()
+    }
+
+    /// 创建一个带有回调函数的Assistant实例（向后兼容）
+    ///
+    /// # Arguments
+    /// * `path` - 同时包含库文件和资源文件的路径
+    /// * `callback` - 回调函数，用于处理助手发送的消息
+    ///
+    /// # Returns
+    /// * `Ok(Assistant)` - 创建成功
+    /// * `Err(Error::CreateFailed)` - 创建失败
+    /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
+    pub fn init_with_callback<
+        P: AsRef<Path>,
+        F: FnMut(message::Message, serde_json::Value) + Send + 'static
+    >(
+        path: P,
+        callback: F
+    ) -> Result<Self, Error> {
+        Self::registry()
+            .with_library(path.as_ref())
+            .with_resource(path.as_ref())
+            .with_callback(callback)
+            .init()
     }
 
     /// 设置实例级别的选项
@@ -133,65 +258,6 @@ impl Assistant {
         } else {
             Err(Error::SetStaticOptionFailed)
         }
-    }
-
-    /// 创建一个新的Assistant实例
-    ///
-    /// # Arguments
-    /// * `path` - 资源文件夹的路径
-    ///
-    /// # Returns
-    /// * `Ok(Assistant)` - 创建成功
-    /// * `Err(Error::CreateFailed)` - 创建失败
-    /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
-    pub fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
-        let core = Self::load_library(path.as_ref())?;
-        Self::load_resource(path, &core)?;
-
-        let handle = unsafe { core.AsstCreate() };
-        NonNull::new(handle)
-            .map(|handle| Self {
-                handle,
-                target: None,
-                tasks: HashMap::new(),
-                core
-            })
-            .ok_or(Error::CreateFailed)
-    }
-
-    /// 创建一个带有回调函数的Assistant实例
-    ///
-    /// # Arguments
-    /// * `path` - 资源文件夹的路径
-    /// * `callback` - 回调函数，用于处理助手发送的消息
-    ///
-    /// # Returns
-    /// * `Ok(Assistant)` - 创建成功
-    /// * `Err(Error::CreateFailed)` - 创建失败
-    /// * `Err(Error::ResourceLoadFailed)` - 资源加载失败
-    pub fn new_with_callback<
-        P: AsRef<Path>,
-        F: FnMut(message::Message, serde_json::Value) + Send + 'static
-    >(
-        path: P,
-        callback: F
-    ) -> Result<Self, Error> {
-        let core = Self::load_library(path.as_ref())?;
-        Self::load_resource(path, &core)?;
-
-        let processor = message::Processor::from(callback);
-        let processor_ptr = Box::into_raw(Box::new(processor));
-
-        let handle = unsafe { core.AsstCreateEx(Some(callback_wrapper), processor_ptr as *mut _) };
-
-        NonNull::new(handle)
-            .map(|handle| Self {
-                handle,
-                target: None,
-                tasks: HashMap::new(),
-                core
-            })
-            .ok_or(Error::CreateFailed)
     }
 
     /// 连接到指定的设备

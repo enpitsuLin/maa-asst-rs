@@ -9,5 +9,5 @@ pub fn get_test_resource_path() -> PathBuf {
 
 /// 创建测试用的 Assistant 实例
 pub fn create_test_assistant() -> maa_sys::Assistant {
-    maa_sys::Assistant::new(get_test_resource_path()).expect("创建 Assistant 实例失败")
+    maa_sys::Assistant::init(get_test_resource_path()).expect("创建 Assistant 实例失败")
 }
