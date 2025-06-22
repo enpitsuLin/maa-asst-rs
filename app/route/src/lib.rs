@@ -8,7 +8,7 @@ pub fn init(cx: &mut App) {
     let state = cx.new(AppRoute::new);
 
     state.update(cx, |this, cx| {
-        this.subscriptions.push(cx.observe(&state, |_this, _state, cx| {
+        this.subscriptions.push(cx.observe(&state, |_this, _state, _cx| {
             // route change side effect
         }));
     });
@@ -101,7 +101,7 @@ impl AppRoute {
     fn new(cx: &mut Context<Self>) -> Self {
         let mut subscriptions = smallvec![];
 
-        subscriptions.push(cx.observe_new::<Self>(|_this, _window, cx| {
+        subscriptions.push(cx.observe_new::<Self>(|_this, _window, _cx| {
             // initial side effect
         }));
 

@@ -83,7 +83,7 @@ fn main() {
             #[cfg(not(target_os = "linux"))]
             titlebar: Some(TitlebarOptions {
                 title: Some(SharedString::new_static(APP_NAME)),
-                traffic_light_position: Some(point(px(9.0), px(9.0))),
+                traffic_light_position: Some(point(px(15.0), px(15.0))),
                 appears_transparent: true,
             }),
             window_bounds: Some(WindowBounds::Windowed(window_bounds)),

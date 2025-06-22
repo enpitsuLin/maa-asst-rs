@@ -1,10 +1,14 @@
-use gpui::{div, px, App, IntoElement, ParentElement, RenderOnce, SharedString, Styled, Window};
+use gpui::{
+    div, px, App, IntoElement, ParentElement, Pixels, RenderOnce, SharedString, Styled, Window,
+};
 use gpui_component::{
     button::{Button, ButtonCustomVariant, ButtonRounded, ButtonVariants},
     h_flex, v_flex, ActiveTheme, Icon, Selectable, Sizable,
 };
 
 use route::{AppRoute, Route, SettingsSubRoute};
+
+pub const TAB_BAR_HEIGHT: Pixels = px(64.);
 
 #[derive(IntoElement)]
 pub struct AppTabBar {}
@@ -29,7 +33,7 @@ impl RenderOnce for AppTabBar {
 
         v_flex().flex_1().size_full().child(view).child(
             h_flex()
-                .h(px(50.))
+                .h(TAB_BAR_HEIGHT)
                 .w_full()
                 .bg(cx.theme().accordion)
                 .justify_between()
@@ -44,10 +48,16 @@ impl RenderOnce for AppTabBar {
                 ]))
                 .child(
                     Button::new("start")
-                        .label("一键长草")
+                        .child(
+                            h_flex()
+                                .gap_1()
+                                .items_center()
+                                .child(Icon::empty().path("icons/play.svg"))
+                                .child(div().py_1().text_xs().child("一键长草")),
+                        )
                         .primary()
-                        .small()
-                        .icon(Icon::empty().path("icons/play.svg"))
+                        .with_size(px(50.))
+                        .px_4()
                         .rounded(ButtonRounded::Size(px(9999.))),
                 ),
         )

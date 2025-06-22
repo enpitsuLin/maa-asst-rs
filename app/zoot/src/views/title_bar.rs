@@ -7,7 +7,12 @@ use gpui_component::{
     h_flex, Icon, IconName, InteractiveElementExt, Sizable,
 };
 
-pub const TITLE_BAR_HEIGHT: Pixels = px(70.);
+pub const TITLE_BAR_HEIGHT: Pixels = px(48.);
+
+#[cfg(target_os = "macos")]
+const TITLE_BAR_LEFT_PADDING: Pixels = px(80.);
+#[cfg(not(target_os = "macos"))]
+const TITLE_BAR_LEFT_PADDING: Pixels = px(12.);
 
 #[derive(IntoElement)]
 pub struct AppTitleBar {}
@@ -30,12 +35,13 @@ impl RenderOnce for AppTitleBar {
                 .items_center()
                 .justify_between()
                 .h(TITLE_BAR_HEIGHT)
-                .px(px(25.))
+                .pl(TITLE_BAR_LEFT_PADDING)
+                .pr(px(25.))
                 .window_control_area(WindowControlArea::Drag)
                 .when(is_linux, |this| {
                     this.on_double_click(|_, window, _| window.zoom_window())
                 })
-                .child(Button::new("home-logo").child("Zoot").ghost())
+                .child("Zoot")
                 .child(WindowControls {}),
         )
     }
