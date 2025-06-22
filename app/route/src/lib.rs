@@ -1,6 +1,6 @@
 use gpui::{
-    div, App, AppContext, Context, Entity, Global, IntoElement, ParentElement, RenderOnce, SharedString,
-    Styled, Subscription, Window,
+    App, AppContext, Context, Entity, Global, SharedString,
+    Subscription,
 };
 use smallvec::{smallvec, SmallVec};
 
