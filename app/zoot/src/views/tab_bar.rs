@@ -37,6 +37,7 @@ impl RenderOnce for AppTabBar {
                 .px_4()
                 .child(h_flex().gap_2().children(vec![
                     TabBarLink::new(Route::Home),
+                    TabBarLink::new(Route::Copliot),
                     TabBarLink::new(Route::Tasks),
                     TabBarLink::new(Route::Dashboard),
                     TabBarLink::new(Route::Settings(SettingsSubRoute::General)),
