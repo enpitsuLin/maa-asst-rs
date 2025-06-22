@@ -19,9 +19,11 @@ pub fn init(cx: &mut App) {
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub enum SettingsSubRoute {
     General,
+    Advanced,
+    About,
 }
 
-#[derive(PartialEq, Eq, Clone, Copy, IntoElement)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Route {
     Home,
     Tasks,
@@ -30,13 +32,15 @@ pub enum Route {
 }
 
 impl Route {
-    fn content(&self) -> SharedString {
+    pub fn content(&self) -> SharedString {
         match self {
             Route::Home => SharedString::new_static("Home"),
             Route::Tasks => SharedString::new_static("Tasks"),
             Route::Dashboard => SharedString::new_static("Dashboard"),
             Route::Settings(sub_route) => match sub_route {
                 SettingsSubRoute::General => SharedString::new_static("Settings / General"),
+                SettingsSubRoute::Advanced => SharedString::new_static("Settings / Advanced"),
+                SettingsSubRoute::About => SharedString::new_static("Settings / About"),
             },
         }
     }
@@ -47,6 +51,8 @@ impl Route {
             Route::Dashboard => SharedString::new_static("dashboard"),
             Route::Settings(sub_route) => match sub_route {
                 SettingsSubRoute::General => SharedString::new_static("settings-general"),
+                SettingsSubRoute::Advanced => SharedString::new_static("settings-advanced"),
+                SettingsSubRoute::About => SharedString::new_static("settings-about"),
             },
         }
     }
@@ -58,18 +64,6 @@ impl Route {
             Route::Dashboard => SharedString::new_static("仪表盘"),
             Route::Settings(_) => SharedString::new_static("设置"),
         }
-    }
-}
-
-impl RenderOnce for Route {
-    fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
-            .flex()
-            .flex_col()
-            .size_full()
-            .items_center()
-            .justify_center()
-            .child(format!("Hello, {}!", self.content()))
     }
 }
 

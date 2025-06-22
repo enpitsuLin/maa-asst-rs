@@ -17,6 +17,7 @@ maa-sys.workspace = true
 
 settings = { path = "../settings" }
 global = { path = "../global" }
+route = { path = "../route" }
 gpui.workspace = true
 gpui-component = { git = "https://github.com/longbridge/gpui-component.git" }
 reqwest_client.workspace = true

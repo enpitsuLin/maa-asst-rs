@@ -1,10 +1,10 @@
-use gpui::{px, App, IntoElement, ParentElement, RenderOnce, SharedString, Styled, Window};
+use gpui::{div, px, App, IntoElement, ParentElement, RenderOnce, SharedString, Styled, Window};
 use gpui_component::{
     button::{Button, ButtonCustomVariant, ButtonRounded, ButtonVariants},
     h_flex, v_flex, ActiveTheme, Icon, Selectable, Sizable,
 };
 
-use crate::views::route::{AppRoute, Route, SettingsSubRoute};
+use route::{AppRoute, Route, SettingsSubRoute};
 
 #[derive(IntoElement)]
 pub struct AppTabBar {}
@@ -17,33 +17,39 @@ impl AppTabBar {
 
 impl RenderOnce for AppTabBar {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        v_flex()
-            .flex_1()
+        let route = AppRoute::get_global(cx).route;
+
+        let view = div()
+            .flex()
+            .flex_col()
             .size_full()
-            .child(AppRoute::get_global(cx).route)
-            .child(
-                h_flex()
-                    .h(px(50.))
-                    .w_full()
-                    .bg(cx.theme().accordion)
-                    .justify_between()
-                    .items_center()
-                    .px_4()
-                    .child(h_flex().gap_2().children(vec![
-                        TabBarLink::new(Route::Home),
-                        TabBarLink::new(Route::Tasks),
-                        TabBarLink::new(Route::Dashboard),
-                        TabBarLink::new(Route::Settings(SettingsSubRoute::General)),
-                    ]))
-                    .child(
-                        Button::new("start")
-                            .label("一键长草")
-                            .primary()
-                            .small()
-                            .icon(Icon::empty().path("icons/play.svg"))
-                            .rounded(ButtonRounded::Size(px(9999.))),
-                    ),
-            )
+            .items_center()
+            .justify_center()
+            .child(format!("Hello, {}!", route.content()));
+
+        v_flex().flex_1().size_full().child(view).child(
+            h_flex()
+                .h(px(50.))
+                .w_full()
+                .bg(cx.theme().accordion)
+                .justify_between()
+                .items_center()
+                .px_4()
+                .child(h_flex().gap_2().children(vec![
+                    TabBarLink::new(Route::Home),
+                    TabBarLink::new(Route::Tasks),
+                    TabBarLink::new(Route::Dashboard),
+                    TabBarLink::new(Route::Settings(SettingsSubRoute::General)),
+                ]))
+                .child(
+                    Button::new("start")
+                        .label("一键长草")
+                        .primary()
+                        .small()
+                        .icon(Icon::empty().path("icons/play.svg"))
+                        .rounded(ButtonRounded::Size(px(9999.))),
+                ),
+        )
     }
 }
 

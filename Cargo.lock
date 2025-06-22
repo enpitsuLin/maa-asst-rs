@@ -5648,6 +5648,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "route"
+version = "0.1.0"
+dependencies = [
+ "global",
+ "gpui",
+ "smallvec",
+]
+
+[[package]]
 name = "roxmltree"
 version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9265,6 +9274,7 @@ dependencies = [
  "gpui-component",
  "maa-sys",
  "reqwest_client",
+ "route",
  "rust-embed",
  "serde",
  "serde_json",

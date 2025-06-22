@@ -11,7 +11,6 @@ use gpui_component::{v_flex, Root, Theme};
 use reqwest_client::ReqwestClient;
 use std::sync::Arc;
 
-use crate::views::route::{self};
 use crate::views::tab_bar::AppTabBar;
 use crate::views::title_bar::AppTitleBar;
 

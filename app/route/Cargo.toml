@@ -1,0 +1,15 @@
+[package]
+name = "route"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description.workspace = true
+publish.workspace = true
+
+[dependencies]
+global = { path = "../global" }
+gpui.workspace = true
+smallvec.workspace = true
