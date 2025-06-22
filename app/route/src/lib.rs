@@ -26,6 +26,7 @@ pub enum SettingsSubRoute {
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Route {
     Home,
+    Copliot,
     Tasks,
     Dashboard,
     Settings(SettingsSubRoute),
@@ -35,6 +36,7 @@ impl Route {
     pub fn content(&self) -> SharedString {
         match self {
             Route::Home => SharedString::new_static("Home"),
+            Route::Copliot => SharedString::new_static("Copliot"),
             Route::Tasks => SharedString::new_static("Tasks"),
             Route::Dashboard => SharedString::new_static("Dashboard"),
             Route::Settings(sub_route) => match sub_route {
@@ -47,6 +49,7 @@ impl Route {
     pub fn id(&self) -> SharedString {
         match self {
             Route::Home => SharedString::new_static("home"),
+            Route::Copliot => SharedString::new_static("copliot"),
             Route::Tasks => SharedString::new_static("tasks"),
             Route::Dashboard => SharedString::new_static("dashboard"),
             Route::Settings(sub_route) => match sub_route {
@@ -60,6 +63,7 @@ impl Route {
     pub fn label(&self) -> SharedString {
         match self {
             Route::Home => SharedString::new_static("主页"),
+            Route::Copliot => SharedString::new_static("自动战斗"),
             Route::Tasks => SharedString::new_static("任务列表"),
             Route::Dashboard => SharedString::new_static("仪表盘"),
             Route::Settings(_) => SharedString::new_static("设置"),
