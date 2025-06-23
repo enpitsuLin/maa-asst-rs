@@ -1,6 +1,6 @@
+use global::constants::APP_NAME;
 use gpui::{
-    div, prelude::FluentBuilder, px, App, InteractiveElement, IntoElement, ParentElement, Pixels, RenderOnce,
-    Styled, Window, WindowControlArea,
+    div, prelude::FluentBuilder, px, App, InteractiveElement, IntoElement, ParentElement, Pixels, RenderOnce, Styled, Window, WindowControlArea
 };
 use gpui_component::{
     button::{Button, ButtonVariants},
@@ -36,12 +36,12 @@ impl RenderOnce for AppTitleBar {
                 .justify_between()
                 .h(TITLE_BAR_HEIGHT)
                 .pl(TITLE_BAR_LEFT_PADDING)
-                .pr(px(25.))
+                .pr(px(12.))
                 .window_control_area(WindowControlArea::Drag)
                 .when(is_linux, |this| {
                     this.on_double_click(|_, window, _| window.zoom_window())
                 })
-                .child("Zoot")
+                .child(format!("{}", APP_NAME))
                 .child(WindowControls {}),
         )
     }
