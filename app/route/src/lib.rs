@@ -38,23 +38,6 @@ pub enum Route {
 }
 
 impl Route {
-    pub fn content(&self) -> SharedString {
-        match self {
-            Route::Home => SharedString::new_static("Home"),
-            Route::Tools(sub_route) => match sub_route {
-                ToolsSubRoute::Copliot => SharedString::new_static("Tools / Copliot"),
-                ToolsSubRoute::Recruit => SharedString::new_static("Tools / Recruit"),
-                ToolsSubRoute::Gacha => SharedString::new_static("Tools / Gacha"),
-            },
-            Route::Tasks => SharedString::new_static("Tasks"),
-            Route::Dashboard => SharedString::new_static("Dashboard"),
-            Route::Settings(sub_route) => match sub_route {
-                SettingsSubRoute::General => SharedString::new_static("Settings / General"),
-                SettingsSubRoute::Advanced => SharedString::new_static("Settings / Advanced"),
-                SettingsSubRoute::About => SharedString::new_static("Settings / About"),
-            },
-        }
-    }
     pub fn id(&self) -> SharedString {
         match self {
             Route::Home => SharedString::new_static("home"),
