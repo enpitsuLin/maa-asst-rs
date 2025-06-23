@@ -5653,6 +5653,7 @@ version = "0.1.0"
 dependencies = [
  "global",
  "gpui",
+ "gpui-component",
  "smallvec",
 ]
 

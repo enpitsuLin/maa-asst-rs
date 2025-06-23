@@ -1,9 +1,9 @@
-use gpui::{
-    div, px, App, IntoElement, ParentElement, Pixels, RenderOnce, SharedString, Styled, Window,
-};
+use gpui::{div, px, App, IntoElement, ParentElement, Pixels, RenderOnce, Styled, Window};
 use gpui_component::{
-    button::{Button, ButtonCustomVariant, ButtonRounded, ButtonVariants},
-    h_flex, v_flex, ActiveTheme, Icon, Selectable, Sizable,
+    button::{Button, ButtonRounded, ButtonVariants},
+    h_flex,
+    tab::TabBar,
+    v_flex, ActiveTheme, Icon, Sizable,
 };
 
 use route::{AppRoute, Route, SettingsSubRoute};
@@ -31,6 +31,14 @@ impl RenderOnce for AppTabBar {
             .justify_center()
             .child(format!("Hello, {}!", route.content()));
 
+        let index = match route {
+            Route::Home => 0,
+            Route::Copliot => 1,
+            Route::Tasks => 2,
+            Route::Dashboard => 3,
+            Route::Settings(_) => 4,
+        };
+
         v_flex().flex_1().size_full().child(view).child(
             h_flex()
                 .h(TAB_BAR_HEIGHT)
@@ -39,13 +47,32 @@ impl RenderOnce for AppTabBar {
                 .justify_between()
                 .items_center()
                 .px_4()
-                .child(h_flex().gap_2().children(vec![
-                    TabBarLink::new(Route::Home),
-                    TabBarLink::new(Route::Copliot),
-                    TabBarLink::new(Route::Tasks),
-                    TabBarLink::new(Route::Dashboard),
-                    TabBarLink::new(Route::Settings(SettingsSubRoute::General)),
-                ]))
+                .child(
+                    TabBar::new("pill")
+                        .w_full()
+                        .pill()
+                        .selected_index(index)
+                        .child(Route::Home)
+                        .child(Route::Copliot)
+                        .child(Route::Tasks)
+                        .child(Route::Dashboard)
+                        .child(Route::Settings(SettingsSubRoute::General))
+                        .on_click(|index: &usize, _, cx| {
+                            let new_route = match index {
+                                0 => Route::Home,
+                                1 => Route::Copliot,
+                                2 => Route::Tasks,
+                                3 => Route::Dashboard,
+                                4 => Route::Settings(SettingsSubRoute::General),
+                                _ => panic!("Invalid index"),
+                            };
+                            let global = AppRoute::global_mut(cx);
+                            global.update(cx, move |this, cx| {
+                                this.route = new_route;
+                                cx.notify();
+                            });
+                        }),
+                )
                 .child(
                     Button::new("start")
                         .child(
@@ -61,48 +88,5 @@ impl RenderOnce for AppTabBar {
                         .rounded(ButtonRounded::Size(px(9999.))),
                 ),
         )
-    }
-}
-
-#[derive(IntoElement)]
-struct TabBarLink {
-    id: SharedString,
-    route: Route,
-}
-
-impl TabBarLink {
-    pub fn new(route: Route) -> Self {
-        Self {
-            id: route.id(),
-            route,
-        }
-    }
-}
-
-impl RenderOnce for TabBarLink {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let tab_button_variant = ButtonCustomVariant::new(cx)
-            .color(cx.theme().primary)
-            .foreground(cx.theme().primary_foreground)
-            .border(cx.theme().border)
-            .shadow(cx.theme().shadow)
-            .hover(cx.theme().primary_hover)
-            .active(cx.theme().primary);
-
-        let is_selected = self.route == AppRoute::get_global(cx).route;
-
-        Button::new(self.id.clone())
-            .custom(tab_button_variant)
-            .label(self.route.label())
-            .ghost()
-            .small()
-            .selected(is_selected)
-            .on_click(move |_this, _, cx| {
-                let global = AppRoute::global_mut(cx);
-                global.update(cx, |this, cx| {
-                    this.route = self.route;
-                    cx.notify();
-                });
-            })
     }
 }

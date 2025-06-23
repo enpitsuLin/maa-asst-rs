@@ -1,7 +1,5 @@
-use gpui::{
-    App, AppContext, Context, Entity, Global, SharedString,
-    Subscription,
-};
+use gpui::{App, AppContext, Context, Entity, Global, SharedString, Subscription};
+use gpui_component::tab::Tab;
 use smallvec::{smallvec, SmallVec};
 
 pub fn init(cx: &mut App) {
@@ -68,6 +66,12 @@ impl Route {
             Route::Dashboard => SharedString::new_static("仪表盘"),
             Route::Settings(_) => SharedString::new_static("设置"),
         }
+    }
+}
+
+impl From<Route> for Tab {
+    fn from(route: Route) -> Self {
+        Tab::new(route.label())
     }
 }
 

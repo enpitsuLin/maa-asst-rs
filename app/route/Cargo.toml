@@ -12,4 +12,5 @@ publish.workspace = true
 [dependencies]
 global = { path = "../global" }
 gpui.workspace = true
+gpui-component.workspace = true
 smallvec.workspace = true
