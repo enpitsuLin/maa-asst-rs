@@ -22,9 +22,16 @@ pub enum SettingsSubRoute {
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
+pub enum ToolsSubRoute {
+    Copliot,
+    Recruit,
+    Gacha,
+}
+
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Route {
     Home,
-    Copliot,
+    Tools(ToolsSubRoute),
     Tasks,
     Dashboard,
     Settings(SettingsSubRoute),
@@ -34,7 +41,11 @@ impl Route {
     pub fn content(&self) -> SharedString {
         match self {
             Route::Home => SharedString::new_static("Home"),
-            Route::Copliot => SharedString::new_static("Copliot"),
+            Route::Tools(sub_route) => match sub_route {
+                ToolsSubRoute::Copliot => SharedString::new_static("Tools / Copliot"),
+                ToolsSubRoute::Recruit => SharedString::new_static("Tools / Recruit"),
+                ToolsSubRoute::Gacha => SharedString::new_static("Tools / Gacha"),
+            },
             Route::Tasks => SharedString::new_static("Tasks"),
             Route::Dashboard => SharedString::new_static("Dashboard"),
             Route::Settings(sub_route) => match sub_route {
@@ -47,7 +58,11 @@ impl Route {
     pub fn id(&self) -> SharedString {
         match self {
             Route::Home => SharedString::new_static("home"),
-            Route::Copliot => SharedString::new_static("copliot"),
+            Route::Tools(sub_route) => match sub_route {
+                ToolsSubRoute::Copliot => SharedString::new_static("tools-copliot"),
+                ToolsSubRoute::Recruit => SharedString::new_static("tools-recruit"),
+                ToolsSubRoute::Gacha => SharedString::new_static("tools-gacha"),
+            },
             Route::Tasks => SharedString::new_static("tasks"),
             Route::Dashboard => SharedString::new_static("dashboard"),
             Route::Settings(sub_route) => match sub_route {
@@ -61,7 +76,7 @@ impl Route {
     pub fn label(&self) -> SharedString {
         match self {
             Route::Home => SharedString::new_static("主页"),
-            Route::Copliot => SharedString::new_static("自动战斗"),
+            Route::Tools(_) => SharedString::new_static("工具"),
             Route::Tasks => SharedString::new_static("任务列表"),
             Route::Dashboard => SharedString::new_static("仪表盘"),
             Route::Settings(_) => SharedString::new_static("设置"),

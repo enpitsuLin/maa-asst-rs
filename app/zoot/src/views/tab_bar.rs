@@ -1,12 +1,12 @@
 use gpui::{div, px, App, IntoElement, ParentElement, Pixels, RenderOnce, Styled, Window};
 use gpui_component::{
-    button::{Button, ButtonRounded, ButtonVariants},
+    button::{Button, ButtonVariants},
     h_flex,
     tab::TabBar,
     v_flex, ActiveTheme, Icon, Sizable,
 };
 
-use route::{AppRoute, Route, SettingsSubRoute};
+use route::{AppRoute, Route, SettingsSubRoute, ToolsSubRoute};
 
 pub const TAB_BAR_HEIGHT: Pixels = px(64.);
 
@@ -33,7 +33,7 @@ impl RenderOnce for AppTabBar {
 
         let index = match route {
             Route::Home => 0,
-            Route::Copliot => 1,
+            Route::Tools(_) => 1,
             Route::Tasks => 2,
             Route::Dashboard => 3,
             Route::Settings(_) => 4,
@@ -53,14 +53,14 @@ impl RenderOnce for AppTabBar {
                         .pill()
                         .selected_index(index)
                         .child(Route::Home)
-                        .child(Route::Copliot)
+                        .child(Route::Tools(ToolsSubRoute::Copliot))
                         .child(Route::Tasks)
                         .child(Route::Dashboard)
                         .child(Route::Settings(SettingsSubRoute::General))
                         .on_click(|index: &usize, _, cx| {
                             let new_route = match index {
                                 0 => Route::Home,
-                                1 => Route::Copliot,
+                                1 => Route::Tools(ToolsSubRoute::Copliot),
                                 2 => Route::Tasks,
                                 3 => Route::Dashboard,
                                 4 => Route::Settings(SettingsSubRoute::General),
@@ -85,7 +85,7 @@ impl RenderOnce for AppTabBar {
                         .primary()
                         .with_size(px(50.))
                         .px_4()
-                        .rounded(ButtonRounded::Size(px(9999.))),
+                        .rounded(px(9999.)),
                 ),
         )
     }
