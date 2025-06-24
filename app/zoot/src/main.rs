@@ -3,35 +3,22 @@ use global::constants::{APP_ID, APP_NAME};
 #[cfg(target_os = "macos")]
 use gpui::KeyBinding;
 use gpui::{
-    actions, div, prelude::*, px, size, AnyView, App, AppContext, Application, Bounds, Context, IntoElement,
-    Menu, MenuItem, Render, Window, WindowBounds, WindowKind, WindowOptions,
+    actions, px, size, AnyView, App, AppContext, Application, Bounds, Menu, MenuItem, WindowBounds,
+    WindowKind, WindowOptions,
 };
 use gpui::{point, SharedString, TitlebarOptions};
-use gpui_component::{v_flex, Root, Theme};
+use gpui_component::{Root, Theme};
 use reqwest_client::ReqwestClient;
+
 use std::sync::Arc;
 
-use crate::views::tab_bar::AppTabBar;
-use crate::views::title_bar::AppTitleBar;
+use crate::views::app::ZootApp;
 
 mod assets;
 mod logger;
 mod views;
-
-struct HelloWorld {}
-
-impl HelloWorld {}
-
-impl Render for HelloWorld {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        div().size_full().relative().child(
-            v_flex()
-                .size_full()
-                .child(AppTitleBar::new())
-                .child(AppTabBar::new()),
-        )
-    }
-}
+mod components;
+mod layouts;
 
 actions!(maa, [About, Setting, Quit]);
 
@@ -83,7 +70,7 @@ fn main() {
             #[cfg(not(target_os = "linux"))]
             titlebar: Some(TitlebarOptions {
                 title: Some(SharedString::new_static(APP_NAME)),
-                traffic_light_position: Some(point(px(15.0), px(15.0))),
+                traffic_light_position: Some(point(px(10.0), px(10.0))),
                 appears_transparent: true,
             }),
             window_bounds: Some(WindowBounds::Windowed(window_bounds)),
@@ -119,9 +106,9 @@ fn main() {
 
                 route::init(cx);
 
-                let hello_world_view = cx.new(|_| HelloWorld {});
+                let app_view = cx.new(|_| ZootApp {});
 
-                Root::new(AnyView::from(hello_world_view), window, cx)
+                Root::new(AnyView::from(app_view), window, cx)
             })
         })
         .expect("Failed to open window. Please restart the application.");

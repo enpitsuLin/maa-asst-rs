@@ -21,11 +21,31 @@ pub enum SettingsSubRoute {
     About,
 }
 
+impl From<SettingsSubRoute> for Tab {
+    fn from(route: SettingsSubRoute) -> Self {
+        Tab::new(match route {
+            SettingsSubRoute::General => SharedString::new_static("基础设置"),
+            SettingsSubRoute::Advanced => SharedString::new_static("高级设置"),
+            SettingsSubRoute::About => SharedString::new_static("关于"),
+        })
+    }
+}
+
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub enum ToolsSubRoute {
-    Copliot,
+    Copilot,
     Recruit,
     Gacha,
+}
+
+impl From<ToolsSubRoute> for Tab {
+    fn from(route: ToolsSubRoute) -> Self {
+        Tab::new(match route {
+            ToolsSubRoute::Copilot => SharedString::new_static("自动战斗"),
+            ToolsSubRoute::Recruit => SharedString::new_static("公招识别"),
+            ToolsSubRoute::Gacha => SharedString::new_static("牛牛抽卡"),
+        })
+    }
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -42,7 +62,7 @@ impl Route {
         match self {
             Route::Home => SharedString::new_static("home"),
             Route::Tools(sub_route) => match sub_route {
-                ToolsSubRoute::Copliot => SharedString::new_static("tools-copliot"),
+                ToolsSubRoute::Copilot => SharedString::new_static("tools-copliot"),
                 ToolsSubRoute::Recruit => SharedString::new_static("tools-recruit"),
                 ToolsSubRoute::Gacha => SharedString::new_static("tools-gacha"),
             },

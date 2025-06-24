@@ -8,7 +8,7 @@ use gpui_component::{
     h_flex, Icon, IconName, InteractiveElementExt, Sizable,
 };
 
-pub const TITLE_BAR_HEIGHT: Pixels = px(48.);
+pub const TITLE_BAR_HEIGHT: Pixels = px(38.);
 
 #[cfg(target_os = "macos")]
 const TITLE_BAR_LEFT_PADDING: Pixels = px(80.);
