@@ -1,6 +1,7 @@
 use global::constants::APP_NAME;
 use gpui::{
-    div, prelude::FluentBuilder, px, App, InteractiveElement, IntoElement, ParentElement, Pixels, RenderOnce, Styled, Window, WindowControlArea
+    div, prelude::FluentBuilder, px, App, InteractiveElement, IntoElement, ParentElement, Pixels, RenderOnce,
+    Styled, Window, WindowControlArea,
 };
 use gpui_component::{
     button::{Button, ButtonVariants},
@@ -24,8 +25,9 @@ impl AppTitleBar {
 }
 
 impl RenderOnce for AppTitleBar {
-    fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, _cx: &mut App) -> impl IntoElement {
         let is_linux = cfg!(target_os = "linux");
+        let is_macos = cfg!(target_os = "macos");
 
         div().flex_shrink_0().child(
             div()
@@ -34,7 +36,6 @@ impl RenderOnce for AppTitleBar {
                 .flex_row()
                 .items_center()
                 .justify_between()
-                .h(TITLE_BAR_HEIGHT)
                 .pl(TITLE_BAR_LEFT_PADDING)
                 .pr(px(12.))
                 .window_control_area(WindowControlArea::Drag)
@@ -42,7 +43,14 @@ impl RenderOnce for AppTitleBar {
                     this.on_double_click(|_, window, _| window.zoom_window())
                 })
                 .child(format!("{}", APP_NAME))
-                .child(WindowControls {}),
+                .child(WindowControls {})
+                .map(|this| {
+                    if is_macos && window.is_fullscreen() {
+                        this.h_0().invisible()
+                    } else {
+                        this.h(TITLE_BAR_HEIGHT).visible()
+                    }
+                }),
         )
     }
 }
