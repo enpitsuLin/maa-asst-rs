@@ -19,8 +19,10 @@ settings = { path = "../settings" }
 global = { path = "../global" }
 route = { path = "../route" }
 gpui.workspace = true
+gpui_tokio.workspace = true
 gpui-component.workspace = true
 reqwest_client.workspace = true
+tokio.workspace = true
 anyhow.workspace = true
 smallvec.workspace = true
 serde.workspace = true

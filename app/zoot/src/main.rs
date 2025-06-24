@@ -103,6 +103,7 @@ fn main() {
                 settings::init(cx);
                 // Initialize components
                 gpui_component::init(cx);
+                gpui_tokio::init(cx);
 
                 route::init(cx);
 
