@@ -8,7 +8,7 @@ use gpui_component::{
 
 use route::{AppRoute, Route, SettingsSubRoute, ToolsSubRoute};
 
-pub const TAB_BAR_HEIGHT: Pixels = px(64.);
+pub const TAB_BAR_HEIGHT: Pixels = px(60.);
 
 #[derive(IntoElement)]
 pub struct AppTabBar {}
@@ -34,7 +34,7 @@ impl RenderOnce for AppTabBar {
         h_flex()
             .h(TAB_BAR_HEIGHT)
             .w_full()
-            .bg(cx.theme().accordion)
+            .bg(cx.theme().tab_bar)
             .justify_between()
             .items_center()
             .px_4()

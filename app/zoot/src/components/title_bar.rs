@@ -4,11 +4,10 @@ use gpui::{
     Styled, Window, WindowControlArea,
 };
 use gpui_component::{
-    button::{Button, ButtonVariants},
-    h_flex, Icon, IconName, InteractiveElementExt, Sizable,
+    h_flex, red_400, ActiveTheme, Colorize, Icon, IconName, InteractiveElementExt, Sizable,
 };
 
-pub const TITLE_BAR_HEIGHT: Pixels = px(38.);
+pub const TITLE_BAR_HEIGHT: Pixels = px(40.);
 
 #[cfg(target_os = "macos")]
 const TITLE_BAR_LEFT_PADDING: Pixels = px(80.);
@@ -25,11 +24,11 @@ impl AppTitleBar {
 }
 
 impl RenderOnce for AppTitleBar {
-    fn render(self, window: &mut Window, _cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let is_linux = cfg!(target_os = "linux");
         let is_macos = cfg!(target_os = "macos");
 
-        div().flex_shrink_0().child(
+        div().flex_shrink_0().bg(cx.theme().tab_bar).child(
             div()
                 .id("title-bar")
                 .flex()
@@ -55,7 +54,7 @@ impl RenderOnce for AppTitleBar {
     }
 }
 
-#[derive(IntoElement, Clone)]
+#[derive(IntoElement, Clone, PartialEq)]
 enum ControlIcon {
     Minimize,
     Restore,
@@ -100,10 +99,17 @@ impl ControlIcon {
 }
 
 impl RenderOnce for ControlIcon {
-    fn render(self, _: &mut Window, _cx: &mut App) -> impl IntoElement {
-        Button::new(self.id())
-            .ghost()
+    fn render(self, _: &mut Window, cx: &mut App) -> impl IntoElement {
+        div()
+            .id(self.id())
+            .flex_shrink_0()
+            .cursor_default()
+            .flex()
+            .items_center()
+            .justify_center()
             .occlude()
+            .size_8()
+            .rounded(cx.theme().radius)
             .map(|this| match self {
                 ControlIcon::Close { .. } => this.window_control_area(WindowControlArea::Close),
                 ControlIcon::Maximize | ControlIcon::Restore => {
@@ -111,7 +117,18 @@ impl RenderOnce for ControlIcon {
                 },
                 ControlIcon::Minimize => this.window_control_area(WindowControlArea::Min),
             })
-            .icon(Icon::new(self.icon()).small())
+            .child(Icon::new(self.icon()).small())
+            .hover(|this| match self {
+                ControlIcon::Close => this.bg(red_400()),
+                _ => {
+                    let color = if cx.theme().mode.is_dark() {
+                        cx.theme().secondary.lighten(0.1).opacity(0.8)
+                    } else {
+                        cx.theme().secondary.darken(0.1).opacity(0.8)
+                    };
+                    this.bg(color)
+                },
+            })
     }
 }
 
